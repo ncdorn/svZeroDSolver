@@ -21,6 +21,12 @@ jobs:
           cd Release
           cmake -DCMAKE_BUILD_TYPE=Release ..
           cmake --build .
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: svzerodsolver-${{matrix.os}}
+          path: Release/svzerodsolver
+          if-no-files-found: error
       - name: Install test dependencies
         run: |
           conda create -n zerod python=3.9
@@ -30,7 +36,7 @@ jobs:
         run: |
           conda run -n zerod pytest tests/test_integration_cpp.py
       - name: Profile svZeroDSolver
-        if: ${{ matrix.os == 'ubuntu-22' }}
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
         run: |
           cd Release
           sudo apt update && sudo apt install google-perftools libgoogle-perftools-dev
@@ -42,6 +48,14 @@ jobs:
         with:
           name: documentation
           path: ./Release/profiling_report.pdf
+      - name: Upload release asset
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: Release/svzerodsolver
+          asset_name: svzerodsolver-${{github.ref_name}}-${{matrix.os}}
+          tag: ${{ github.ref }}
   python:
     runs-on: ubuntu-latest
     steps:
