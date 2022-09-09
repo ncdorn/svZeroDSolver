@@ -39,6 +39,13 @@ jobs:
           sudo apt-get update && sudo apt-get install google-perftools libgoogle-perftools-dev
           LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libprofiler.so CPUPROFILE=main.prof CPUPROFILE_FREQUENCY=100000 ./svzerodsolver ../tests/cases/0183_1002_0d.in ./tmp.csv
           google-pprof --pdf ./svzerodsolver main.prof > profiling_report.pdf
+      - name: Profile svZeroDSolver
+        if: startsWith(matrix.os,'macos')
+        run: |
+          cd Release
+          brew install gperftools
+          sudo DYLD_INSERT_LIBRARIES=/usr/local/lib/libprofiler.dylib CPUPROFILE=main.prof CPUPROFILE_FREQUENCY=100000 ./svzerodsolver ../tests/cases/0183_1002_0d.in ./tmp.csv
+          pprof --pdf ./svzerodsolver main.prof > profiling_report.pdf
       - name: Upload profiling report
         if: startsWith(matrix.os,'ubuntu')
         uses: actions/upload-artifact@v3
