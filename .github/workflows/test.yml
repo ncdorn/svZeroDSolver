@@ -36,7 +36,7 @@ jobs:
         if: startsWith(matrix.os,'ubuntu')
         run: |
           cd Release
-          sudo apt-get update && sudo apt-get install libgoogle-perftools-dev
+          sudo apt-get update && sudo apt-get install libgoogle-perftools-dev google-perftools
           LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libprofiler.so CPUPROFILE=main.prof CPUPROFILE_FREQUENCY=100000 ./svzerodsolver ../tests/cases/0183_1002_0d.in ./tmp.csv
           google-pprof --pdf ./svzerodsolver main.prof > profiling_report.pdf
       - name: Profile svZeroDSolver
