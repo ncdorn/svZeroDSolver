@@ -40,11 +40,11 @@ jobs:
           LD_PRELOAD=/usr/local/lib/libprofiler.so CPUPROFILE=main.prof CPUPROFILE_FREQUENCY=100000 ./svzerodsolver ../tests/cases/0183_1002_0d.in ./tmp.csv
           google-pprof --pdf ./svzerodsolver main.prof > profiling_report.pdf
       - name: Upload profiling report
-        if: ${{ ${{matrix.os}} == 'ubuntu-22' }}
+        if: ${{matrix.os}} == 'ubuntu-*'
         uses: actions/upload-artifact@v3
         with:
           name: documentation
-          path: ./Release/profiling_report.pdf
+          path: ./Release/profiling-report-${{matrix.os}}.pdf
       - name: Upload release asset
         if: startsWith(github.ref, 'refs/tags/')
         uses: svenstaro/upload-release-action@v2
