@@ -50,8 +50,8 @@ jobs:
         if: startsWith(matrix.os,'ubuntu')
         uses: actions/upload-artifact@v3
         with:
-          name: documentation
-          path: ./Release/profiling-report-${{matrix.os}}.pdf
+          name: profiling-report-${{matrix.os}}
+          path: ./Release/profiling_report.pdf
       - name: Upload release asset
         if: startsWith(github.ref, 'refs/tags/')
         uses: svenstaro/upload-release-action@v2
