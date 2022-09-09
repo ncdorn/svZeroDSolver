@@ -33,14 +33,14 @@ jobs:
         run: |
           conda run -n zerod pytest tests/test_integration_cpp.py
       - name: Profile svZeroDSolver
-        if: matrix.os == 'ubuntu-*'
+        if: startsWith(matrix.os,'ubuntu')
         run: |
           cd Release
           sudo apt-get update && sudo apt-get install google-perftools libgoogle-perftools-dev
           LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libprofiler.so CPUPROFILE=main.prof CPUPROFILE_FREQUENCY=100000 ./svzerodsolver ../tests/cases/0183_1002_0d.in ./tmp.csv
           google-pprof --pdf ./svzerodsolver main.prof > profiling_report.pdf
       - name: Upload profiling report
-        if: matrix.os == 'ubuntu-*'
+        if: startsWith(matrix.os,'ubuntu')
         uses: actions/upload-artifact@v3
         with:
           name: documentation
