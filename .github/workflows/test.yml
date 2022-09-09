@@ -33,7 +33,7 @@ jobs:
         run: |
           conda run -n zerod pytest tests/test_integration_cpp.py
       - name: Profile svZeroDSolver
-        if: ${{ matrix.os == 'ubuntu-*' }}
+        if: ${{matrix.os}} == 'ubuntu-*'
         run: |
           cd Release
           sudo apt-get update && sudo apt-get install google-perftools libgoogle-perftools-dev
