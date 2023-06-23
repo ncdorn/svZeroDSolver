@@ -97,12 +97,18 @@ class BloodVessel(Block):
         )
         return cls(params=params, name="V" + str(config["vessel_id"]))
 
-    def update_solution(self, y: np.ndarray) -> None:
+    def update_solution(self, y: np.ndarray, ydot: np.ndarray) -> None:
         """Update solution dependent element contributions.
 
         Args:
             y: Current solution.
+            ydot: current solution time derivative
         """
+        # print("printing the internal variable:" + str(y[0]))
+        # print("printing the inflow pressure: " + str(y[self.inflow_nodes[0].pres_dof]))
+        # print(y)
+        # print(self.inflow_nodes[0].pres_dof, self.inflow_nodes[0].flow_dof, self.outflow_nodes[0].pres_dof, self.outflow_nodes[0].flow_dof)
+        # print(len(y))
         Q_in = np.abs(y[self.inflow_nodes[0].flow_dof])
         fac1 = -self._params["stenosis_coefficient"] * Q_in
         fac2 = fac1 - self._params["R"]

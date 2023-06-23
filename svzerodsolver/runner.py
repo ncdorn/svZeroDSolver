@@ -52,7 +52,6 @@ def run_from_config(parameters):
     Returns:
         Python dict with results.
     """
-
     y_initial = None
     ydot_initial = None
     sim_params = parameters["simulation_parameters"]
@@ -99,7 +98,9 @@ def run_from_config(parameters):
             "pressure_out",
         ]
     )
+    keys = []
     for branch_id, name in enumerate(branch_result["names"]):
+        keys.append(name)
         result = pd.concat(
             [
                 result,
@@ -121,12 +122,13 @@ def run_from_config(parameters):
                         ),
                     }
                 ),
-            ]
+            ],
+            ignore_index=True
         )
     return result
 
 
-def run_from_file(input_file, output_file):
+def run_from_file(input_file, output_file=None):
     """Run the svZeroDSolver from file.
 
     Args:
@@ -135,7 +137,8 @@ def run_from_file(input_file, output_file):
     """
     with open(input_file) as ff:
         config = json.load(ff)
-    result = run_from_config(config)
+    df = run_from_config(config)
+    result = {'name': 'results!', 'data': df.to_dict()}
     with open(output_file, "w") as ff:
         json.dump(result, ff)
 

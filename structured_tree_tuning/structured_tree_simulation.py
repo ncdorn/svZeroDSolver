@@ -1,0 +1,168 @@
+from svzerodsolver import runner
+import csv
+from pathlib import Path
+import numpy as np
+import json
+from struct_tree_utils import *
+from scipy.optimize import minimize, Bounds
+from svzerodsolver.model.structuredtreebc import StructuredTreeOutlet
+
+
+
+def optimize_preop_0d(clinical_targets: csv, input_file, log_file):
+    '''
+
+    :param clinical_targets: clinical targets input csv
+    :param input_file: 0d solver json input file name string
+    :param output_file: 0d solver json output file name string
+    :return: preop simulation with optimized BCs
+    '''
+    # get the clinical target values
+    with open(log_file, "w") as log:
+        log.write("Getting clinical target values... \n")
+    bsa = float(get_value_from_csv(clinical_targets, 'bsa'))
+    cardiac_index = float(get_value_from_csv(clinical_targets, 'cardiac index'))
+    q = bsa * cardiac_index # cardiac output in L/min
+    mpa_pressures = get_value_from_csv(clinical_targets, 'mpa pressures') # mmHg
+    mpa_sys_p_target = int(mpa_pressures[0:2])
+    mpa_dia_p_target = int(mpa_pressures[3:5])
+    mpa_mean_p_target = int(get_value_from_csv(clinical_targets, 'mpa mean pressure'))
+    target_ps = np.array([
+        mpa_sys_p_target,
+        mpa_dia_p_target,
+        mpa_mean_p_target
+    ])
+    target_ps = target_ps * 1333.22 # convert to barye
+
+    # load input json as a config dict
+    with open(input_file) as ff:
+        zeroD_config = json.load(ff)
+    # get resistances from the zerod input file
+    resistance = get_resistances(zeroD_config)
+
+    # scale the inflow
+
+
+    # run zerod simulation to reach clinical targets
+    def zerod_optimization_objective(r,
+                                     input_config=zeroD_config,
+                                     target_p = target_ps[2]
+                                     ):
+        # r = abs(r)
+        # r = [r, r]
+        write_resistances(input_config, r)
+        zerod_result = runner.run_from_config(input_config)
+        mpa_pressures, mpa_sys_p, mpa_dia_p, mpa_mean_p  = get_branch_pressure(zerod_result, branch_name='V0') # get mpa pressure
+
+        pred_p = np.array([
+            mpa_sys_p,
+            mpa_dia_p,
+            mpa_mean_p
+        ])
+        # SSE = np.sum(np.square(np.subtract(pred_p, target_p)))
+        # MSE = np.square(np.subtract(pred_p, target_p)).mean()
+        p_diff = abs(target_p - mpa_mean_p)
+        return p_diff
+    # write to log file for debugging
+    with open(log_file, "a") as log:
+        log.write("Optimizing preop outlet resistance... \n")
+    # run the optimization algorithm
+    result = minimize(zerod_optimization_objective, resistance, args=(zeroD_config, target_ps[2]), method="Nelder-Mead")
+    # write to log file for debugging
+    with open(log_file, "a") as log:
+        log.write("Outlet resistances optimized! \n")
+
+    R_final = result.x # get the array of optimized resistances
+    write_resistances(zeroD_config, R_final)
+    return zeroD_config, R_final
+
+
+def construct_trees(config: dict, resistances=None, log_file=None):
+    for vessel_config in config["vessels"]:
+        if "boundary_conditions" in vessel_config:
+            if "outlet" in vessel_config["boundary_conditions"]:
+                outlet_tree = StructuredTreeOutlet.from_outlet_vessel(vessel_config, config["simulation_parameters"])
+                R = resistances[get_resistance_idx(vessel_config)]
+                # write to log file for debugging
+                with open(log_file, "a") as log:
+                    log.write("** building tree for resistance: " + str(R) + " ** \n")
+                # outlet_tree.optimize_tree_radius(R)
+                outlet_tree.optimize_tree_radius(R, log_file)
+                # write to log file for debugging
+                with open(log_file, "a") as log:
+                    log.write("     the number of vessels is " + str(len(outlet_tree.block_dict["vessels"])) + "\n")
+                vessel_config["tree"] = outlet_tree.block_dict
+
+
+def calculate_flow(config: dict, repair_vessels=None, log_file=None):
+    preop_result = runner.run_from_config(config)
+    repair_stenosis(config, repair_vessels, repair_all=True, log_file=log_file)
+    postop_result = runner.run_from_config(config)
+
+    return preop_result, postop_result
+
+
+def adapt_trees(config, preop_result, postop_result):
+    preop_q = get_outlet_flowrate(config, preop_result, steady=True)
+    postop_q = get_outlet_flowrate(config, postop_result, steady=True)
+    # q_diff = [postop_q[i] - q_old for i, q_old in enumerate(preop_q)]
+    # print("the change in q is: " + str(q_diff))
+    adapted_config = config
+    outlet_idx = 0 # index through outlets
+    R_new = []
+
+    for vessel_config in adapted_config["vessels"]:
+        if "boundary_conditions" in vessel_config:
+            if "outlet" in vessel_config["boundary_conditions"]:
+                outlet_tree = StructuredTreeOutlet.from_outlet_vessel(vessel_config, config["simulation_parameters"], tree_config=True)
+                R_new.append(outlet_tree.adapt_constant_wss(preop_q[outlet_idx], postop_q[outlet_idx], disp=False))
+                vessel_config["tree"] = outlet_tree.block_dict
+                outlet_idx +=1
+
+    write_resistances(adapted_config, R_new)
+    return adapted_config
+
+
+def run_final_flow(config, preop_result, postop_result, output_file, log_file):
+    final_result = runner.run_from_config(config)
+    with open(log_file, "a") as log:
+        log.write("Writing result to file... \n")
+    result = {'name': 'results!', 'data': final_result.to_dict()}
+    with open(output_file, "w") as ff:
+        json.dump(result, ff)
+
+    preop_q = get_outlet_flowrate(config, preop_result, steady=True)
+    postop_q = get_outlet_flowrate(config, postop_result, steady=True)
+    final_q = get_outlet_flowrate(config, final_result, steady=True)
+    with open(log_file, "a") as log:
+        log.write("** RESULT COMPARISON ** \n")
+        log.write("     preop outlet flowrates: " + str(preop_q) + "\n")
+        log.write("     pre-adaptation outlet flowrates: " + str(postop_q) + "\n")
+        log.write("     post-adaptation outlet flowrates: " + str(final_q) + "\n \n")
+        log.write("Simulation completed!")
+
+
+
+# Press the green button in the gutter to run the script.
+if __name__ == '__main__':
+    test_dir = Path("tree_tuning_test")
+    filename = 'AS1_reduced_steady'
+    input_file = test_dir / 'LPA_RPA_0d_steady.in'
+    log_file = test_dir / 'LPA_RPA_0d_steady.log'
+    output_file = test_dir / 'LPA_RPA_0d_steady.out'
+
+    config, R_final = optimize_preop_0d(test_dir / 'clinical_targets.csv',
+                                     input_file, log_file)
+
+    construct_trees(config, R_final, log_file)
+
+    preop_result, postop_result = calculate_flow(config, repair_vessels=[2, 5], log_file=log_file)
+
+    adapted_config = adapt_trees(config, preop_result, postop_result)
+
+    final_result = run_final_flow(config, preop_result, postop_result, output_file, log_file)
+
+
+
+
+# See PyCharm help at https://www.jetbrains.com/help/pycharm/

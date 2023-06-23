@@ -56,7 +56,7 @@ class Node:
         self.flow_dof: int = None
         self.pres_dof: int = None
 
-        # Make the node the ouflow node of the first element and the inflow
+        # Make the node the outflow node of the first element and the inflow
         # node of the second element
         ele1.outflow_nodes.append(self)
         ele2.inflow_nodes.append(self)

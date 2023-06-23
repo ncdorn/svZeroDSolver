@@ -113,7 +113,7 @@ class GeneralizedAlpha:
         for iter in range(self.max_iter):
             # update solution-dependent blocks
             for b in block_list:
-                b.update_solution(yaf)
+                b.update_solution(yaf, ydotam)
 
             # Assemble
             self.assemble(block_list)

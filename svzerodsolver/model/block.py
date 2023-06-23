@@ -148,11 +148,12 @@ class Block(ABC):
         """
         pass
 
-    def update_solution(self, y: np.ndarray) -> None:
+    def update_solution(self, y: np.ndarray, ydot: np.ndarray) -> None:
         """Update solution dependent element contributions.
 
         Args:
             y: Current solution.
+            ydot: current solution time derivative
         """
         pass
 

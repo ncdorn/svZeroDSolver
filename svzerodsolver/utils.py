@@ -36,11 +36,14 @@ from .model.bloodvessel import BloodVessel
 from .model.dofhandler import DOFHandler
 from .model.flowreferencebc import FlowReferenceBC
 from .model.internaljunction import InternalJunction
+from .model.bloodvesseljunction import BloodVesselJunction
 from .model.node import Node
 from .model.openloopcoronarybc import OpenLoopCoronaryBC
 from .model.pressurereferencebc import PressureReferenceBC
 from .model.resistancebc import ResistanceBC
 from .model.windkesselbc import WindkesselBC
+from .model.RH_LPN import create_RH_LPN
+from .model.structuredtreebc import StructuredTreeOutlet
 
 
 def get_solver_params(config):
@@ -104,7 +107,6 @@ def create_blocks(config, steady=False):
     """
     block_dict = {}
     connections = []
-
     # Create junctions
     for junction_config in config["junctions"]:
         if junction_config["junction_type"] in [
@@ -112,6 +114,10 @@ def create_blocks(config, steady=False):
             "internal_junction",
         ]:
             junction = InternalJunction.from_config(junction_config)
+        elif junction_config["junction_type"] in [
+            "BloodVesselJunction",
+        ]:
+            junction = BloodVesselJunction.from_config(junction_config)
         else:
             raise ValueError(
                 f"Unknown junction type: {junction_config['junction_type']}"
@@ -128,6 +134,8 @@ def create_blocks(config, steady=False):
             raise RuntimeError(f"Junction {junction.name} already exists.")
         block_dict[junction.name] = junction
 
+    # create RH LPN
+
     # Create vessels and boundary conditions
     for vessel_config in config["vessels"]:
         if vessel_config["zero_d_element_type"] == "BloodVessel":
@@ -136,12 +144,20 @@ def create_blocks(config, steady=False):
             raise NotImplementedError
         if "boundary_conditions" in vessel_config:
             if "inlet" in vessel_config["boundary_conditions"]:
-                connections.append(
-                    (
-                        "BC" + str(vessel_config["vessel_id"]) + "_inlet",
-                        vessel.name,
+                if "RH" in vessel_config["boundary_conditions"]["inlet"]:
+                    connections.append(
+                        (
+                            "PV",
+                            vessel.name
+                        )
                     )
-                )
+                else:
+                    connections.append(
+                        (
+                            "BC" + str(vessel_config["vessel_id"]) + "_inlet",
+                            vessel.name,
+                        )
+                    )
             if "outlet" in vessel_config["boundary_conditions"]:
                 connections.append(
                     (
@@ -149,9 +165,15 @@ def create_blocks(config, steady=False):
                         "BC" + str(vessel_config["vessel_id"]) + "_outlet",
                     )
                 )
+            # if "structured tree" in vessel_config["boundary_conditions"]:
+                # struct_tree = StructuredTreeOutlet.from_outlet_vessel(vessel_config, config["simulation_parameters"])
+                # build tree
+                # append blocks from tree into connections
         if vessel.name in block_dict:
             raise RuntimeError(f"Vessel {vessel.name} already exists.")
+        # add the vessels into the block dictionary
         block_dict[vessel.name] = vessel
+
         if "boundary_conditions" in vessel_config:
             locations = [
                 loc
@@ -210,6 +232,17 @@ def create_blocks(config, steady=False):
                     bc = PressureReferenceBC.from_config(bc_config)
                 elif bc_config["bc_type"] == "CORONARY":
                     bc = OpenLoopCoronaryBC.from_config(bc_config)
+                elif bc_config["bc_type"] == "RH_LPN":
+                    bc = PressureReferenceBC.from_config(bc_config)
+                    print(bc_config["bc_values"]["RH_constants"])
+                    # with bc_config["bc_values"] as bc_values:
+                    create_RH_LPN(connections, block_dict,
+                                  RH_constants=bc_config["bc_values"]["RH_constants"],
+                                  RH_params=bc_config["bc_values"]["RH_constants"],
+                                  period=config["simulation_parameters"]["cardiac_cycle_period"])
+                    print(connections)
+                    print(block_dict)
+                    # connections +=
                 else:
                     raise NotImplementedError
                 block_dict[bc.name] = bc
