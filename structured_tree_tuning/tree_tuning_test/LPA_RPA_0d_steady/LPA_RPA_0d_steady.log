@@ -1,0 +1,19 @@
+Getting clinical target values... 
+inlet BCs converted to steady 
+RCR BCs converted to R, Pd = None
+Optimizing preop outlet resistance... 
+Outlet resistances optimized! [572.57832733 171.88607516]
+** building tree for resistance: 572.5783273271281 ** 
+     the optimized radius is [0.2709433]     the number of vessels is 31
+** building tree for resistance: 171.8860751591582 ** 
+     the optimized radius is [0.46766671]     the number of vessels is 63
+** repairing stenoses in vessels [1, 4] ** 
+     vessel 1 has been repaired 
+     vessel 4 has been repaired 
+Writing result to file... 
+** RESULT COMPARISON ** 
+     preop outlet flowrates: [50.59599913949437, 46.70400086050566]
+     pre-adaptation outlet flowrates: [50.55896705061221, 46.7410329493878]
+     post-adaptation outlet flowrates: [53.43374473071481, 43.866255269284764]
+ 
+Simulation completed!

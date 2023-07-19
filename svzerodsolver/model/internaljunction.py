@@ -69,8 +69,10 @@ class InternalJunction(Block):
         self._mat["F"] = np.zeros(
             (self._NUM_EQUATIONS, self._NUM_EQUATIONS * 2)
         )
+        # pressure continuity
         for i in range(self._NUM_EQUATIONS - 1):
             self._mat["F"][i, [0, 2 * i + 2]] = [1.0, -1.0]
+        # flow continuity
         self._mat["F"][-1, np.arange(1, 2 * self._NUM_EQUATIONS, 2)] = [
             1.0
         ] * num_inlets + [-1.0] * num_outlets

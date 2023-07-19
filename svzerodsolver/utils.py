@@ -42,6 +42,7 @@ from .model.openloopcoronarybc import OpenLoopCoronaryBC
 from .model.pressurereferencebc import PressureReferenceBC
 from .model.resistancebc import ResistanceBC
 from .model.windkesselbc import WindkesselBC
+from .model.mpa_bloodvesseljunction import MPA_BloodVesselJunction
 from .model.RH_LPN import create_RH_LPN
 from .model.structuredtreebc import StructuredTreeOutlet
 
@@ -118,6 +119,10 @@ def create_blocks(config, steady=False):
             "BloodVesselJunction",
         ]:
             junction = BloodVesselJunction.from_config(junction_config)
+        elif junction_config["junction_type"] in [
+            "MPA_BloodVesselJunction",
+        ]:
+            junction = MPA_BloodVesselJunction.from_config(junction_config)
         else:
             raise ValueError(
                 f"Unknown junction type: {junction_config['junction_type']}"
@@ -234,14 +239,14 @@ def create_blocks(config, steady=False):
                     bc = OpenLoopCoronaryBC.from_config(bc_config)
                 elif bc_config["bc_type"] == "RH_LPN":
                     bc = PressureReferenceBC.from_config(bc_config)
-                    print(bc_config["bc_values"]["RH_constants"])
+                    # print(bc_config["bc_values"]["RH_constants"])
                     # with bc_config["bc_values"] as bc_values:
                     create_RH_LPN(connections, block_dict,
                                   RH_constants=bc_config["bc_values"]["RH_constants"],
-                                  RH_params=bc_config["bc_values"]["RH_constants"],
+                                  RH_params=bc_config["bc_values"]["RH_params0"],
                                   period=config["simulation_parameters"]["cardiac_cycle_period"])
-                    print(connections)
-                    print(block_dict)
+                    # print(connections)
+                    # print(block_dict)
                     # connections +=
                 else:
                     raise NotImplementedError

@@ -1,17 +1,40 @@
 {
     "boundary_conditions": [
         {
-            "bc_name": "INFLOW",
-            "bc_type": "FLOW",
+            "bc_name": "RH_LPN",
+            "bc_type": "RH_LPN",
             "bc_values": {
-                "Q": [
-                    97.3,
-		    97.3
-                ],
-                "t": [
-                    0.0,
-		    1.0
-                ]
+                "P": [  
+			20500.4,
+			20500.4
+		     ],
+
+		"t": [  
+			0.0,
+			1.0
+		     ],
+		"RH_constants": {
+			"rho": 1.06,
+			"V_rv0": 26.403137217447753,
+			"P_RA": 20500.4,
+			"l_tv": 13.332,
+			"l_pv": 13.332,
+			"S_TV": 8.0,
+			"S_PV": 7.1,
+			"K_voT": 0.03,
+			"K_vcT": 0.04,		
+			"K_voP": 0.02,
+			"K_vcP": 0.02
+			},
+		"RH_params0": {
+			"Ts": 0.3295230560406674,
+			"Tr": 0.10747561100202316,
+			"theta": 0.8020270179159048,
+			"c1": 1333.2,
+			"c2": 2666.4,
+			"c3": 133.32,
+			"c4": 2666.4
+			}
             }
         },
         {
@@ -113,14 +136,14 @@
     "simulation_parameters": {
         "density": 1.06,
         "model_name": "LPA_RPA",
-        "number_of_cardiac_cycles": 1,
+        "number_of_cardiac_cycles": 3,
         "number_of_time_pts_per_cardiac_cycle": 100,
         "viscosity": 0.04
     },
     "vessels": [
         {
             "boundary_conditions": {
-                "inlet": "INFLOW"
+                "inlet": "RH_LPN"
             },
             "vessel_id": 0,
             "vessel_length": 0.8309320942564549,

@@ -21,19 +21,19 @@ class StructuredTreeOutlet():
             name: Optional name of the block.
         """
         self.params = params
+        # initial diameter of the vessel from which the tree starts
+        self.initialD = ((128 * self.params["eta"] * self.params["l"]) / (np.pi * self.params["R"])) ** (1 / 4)
+        # intialize resistance
+        self.totalResistance = 0
         # set up empty block dict if not generated from pre-existing tree
         if config is None:
             self.name = name
-            self.block_dict = {'name': name, 'vessels': [], 'junctions': [], 'adaptations': 0}
+            self.block_dict = {'name': name, 'origin_d': self.initialD, 'vessels': [], 'junctions': [], 'adaptations': 0}
             self.vesselDlist = []
         else:
             self.name = config["name"]
             self.block_dict = config
             self.vesselDlist = create_vesselDlist(config["vessels"])
-
-        # initial diameter of the vessel from which the tree starts
-        self.initialD = ((128 * self.params["eta"] * self.params["l"]) / (np.pi * self.params["R"]))**(1 / 4)
-        self.totalResistance = 0
 
     @classmethod
     def from_outlet_vessel(cls, config: dict, simparams: dict, tree_config=False) -> "StructuredTreeOutlet":
@@ -120,8 +120,11 @@ class StructuredTreeOutlet():
         layers = math.ceil(math.log(r_min / initial_r) / math.log(beta)) # number of layers required to reach r_min
         if layers <=1:
             layers = 2 # make sure there are at least two layers
+        elif layers >= 6:
+            layers = 6 # prevent creation of too many layers during optimization
 
         tree = [[(0, 0)]] #initialize the tree
+        # print(initial_r, layers)
         for i in range(layers):
             next_layer = self.build_next_layer(tree[i])
             tree.append(next_layer)
@@ -143,6 +146,7 @@ class StructuredTreeOutlet():
                                "vessel_length": l,
                                "vessel_D": vesselD,
                                "vessel_name": name,
+                               "generation": i,
                                "zero_d_element_type": "BloodVessel",
                                "zero_d_element_values": {
                                    "R_poiseulle": R,
@@ -191,10 +195,14 @@ class StructuredTreeOutlet():
     def calculate_resistance(self):
         R_mat = []
         for layer in self.vesselDlist:
+            for vesselD in layer:
+                # need to add in fahraeus-Lindqvist effect
+                pass
             R_mat.append([8 * self.params["eta"] * self.params["l"] / (np.pi * (vesselD / 2) ** 4) for vesselD in layer])
         R_tot = []
         for i, layer in enumerate(reversed(R_mat[:-1])): # loop through all but the last layer in a reversed manner
             for j, r in enumerate(layer):
+
                 r_add = 1 / ((1 / R_mat[-1 - i][2*j]) + (1 / R_mat[-1 - i][2 * j + 1]))
                 layer[j] = r + r_add
             R_tot.append(layer)
@@ -239,16 +247,18 @@ class StructuredTreeOutlet():
                 """
 
         r_guess = self.initialD / 2
+
         def r_min_objective(radius):
             self.build_tree(radius[0], optimized=True)
+            # print(self.block_dict)
             R = self.calculate_resistance()
             R_diff = (Resistance - R)**2
             return R_diff
 
-        bounds = Bounds(lb=0.049) # minimum is r_min
+        bounds = Bounds(lb=0.049, ub=self.initialD) # minimum is r_min
         r_final = minimize(r_min_objective,
                            r_guess,
-                           options={"disp": True},
+                           options={"disp": False},
                            bounds=bounds) # Nelder mead doesn't seem to work here
         R_final = self.calculate_resistance()
         with open(log_file, "a") as log:
