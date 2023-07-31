@@ -2,8 +2,8 @@
 import numpy as np
 import random
 from scipy.optimize import minimize, Bounds, LinearConstraint
+from .treevessel import TreeVessel
 import math
-# from structured_tree_tuning.struct_tree_utils import create_vesselDlist
 
 class StructuredTreeOutlet():
     """Structured tree microvascular adaptation to upstream changes
@@ -13,7 +13,7 @@ class StructuredTreeOutlet():
     need to restructure this class, as it is not a block but rather a collection of blocks
 
     """
-    def __init__(self, params: dict = None, name: str = None, config: dict = None):
+    def __init__(self, params: dict = None, name: str = None, config: dict = None, root: TreeVessel = None):
         """Create a new structured tree instance
         Args:
             params: The configuration paramaters of the block. Mostly comprised
@@ -23,20 +23,23 @@ class StructuredTreeOutlet():
         self.params = params
         # initial diameter of the vessel from which the tree starts
         self.initialD = ((128 * self.params["eta"] * self.params["l"]) / (np.pi * self.params["R"])) ** (1 / 4)
-        # intialize resistance
-        self.totalResistance = 0
         # set up empty block dict if not generated from pre-existing tree
         if config is None:
             self.name = name
             self.block_dict = {'name': name, 'origin_d': self.initialD, 'vessels': [], 'junctions': [], 'adaptations': 0}
-            self.vesselDlist = []
+            # initialize the root of the structured tree
+            self.root = None
         else:
             self.name = config["name"]
             self.block_dict = config
-            self.vesselDlist = create_vesselDlist(config["vessels"])
+            # initialize the root of the structured tree
+            self.root = root
+
+
+
 
     @classmethod
-    def from_outlet_vessel(cls, config: dict, simparams: dict, tree_config=False) -> "StructuredTreeOutlet":
+    def from_outlet_vessel(cls, config: dict, simparams: dict, tree_exists=False, root: TreeVessel = None, ) -> "StructuredTreeOutlet":
         """Creates instance from config dictionary of outlet vessel
             Args:
                 config file of outlet vessel
@@ -57,17 +60,19 @@ class StructuredTreeOutlet():
             ),
             eta=simparams.get("viscosity"),
         )
-        if tree_config:
-            return cls(params=params, config = config["tree"])
+        if tree_exists:
+            return cls(params=params, config = config["tree"], root=root)
         else:
             return cls(params=params, name="OutletTree" + str(config["vessel_id"]))
 
-    def reset_block_dict(self):
+
+    def reset_tree(self):
         """
         reset the block dict if you are generating many iterations of the structured tree to optimize the radius
         Returns: empty block_dict
 
         """
+        self.root = None
         self.block_dict["vessels"] = []
         self.block_dict["junctions"] = []
         self.vesselDlist = []
@@ -86,100 +91,75 @@ class StructuredTreeOutlet():
 
         return next_layer
 
-    def build_tree(self, initial_r=None, r_min=0.049, optimized=False, alpha=None, beta=None):
-        """ iteratively generates a tree with BloodVessel and (Junction?) instances
-            using pre-determined alpha and beta parameters from Olufsen et al. (alpha=0.9, beta=0.6)
-            Args:
-                initial vessel radius, minimum radius
-            Returns:
-                updated self.blockdict
 
-        """
-        if optimized:
-            self.reset_block_dict() # reset block dict if making the tree many times
+
+    def build_tree(self, initial_r=None, d_min=0.049, optimizing=False, alpha=0.9, beta=0.6):
+
+        if optimizing:
+            self.reset_tree() # reset block dict if making the tree many times
 
         if initial_r is None: # set default value of initial_r
             initial_r = self.initialD / 2
 
-        if alpha is None and beta is None:
-            # initialize with Olufsen parameters
-            alpha = 0.9 # initialize alpha
-            beta = 0.6 #initialize beta
+        if d_min <= 0:
+            raise ValueError("The min diameter must be greater than 0.")
 
-        else:
-            # print("the chosen alpha and beta are: " + str([alpha, beta]))
-            alpha = alpha
-            beta = beta
-
-        # layers = random.randint(4, 7) # initialize a random number of bifurcation layers
-        # print(r_min, initial_r)
         if initial_r <= 0:
             raise Exception("initial_r is invalid, " + str(initial_r))
         if beta ==0:
             raise Exception("beta is zero")
-        layers = math.ceil(math.log(r_min / initial_r) / math.log(beta)) # number of layers required to reach r_min
-        if layers <=1:
-            layers = 2 # make sure there are at least two layers
-        elif layers >= 6:
-            layers = 6 # prevent creation of too many layers during optimization
-
-        tree = [[(0, 0)]] #initialize the tree
-        # print(initial_r, layers)
-        for i in range(layers):
-            next_layer = self.build_next_layer(tree[i])
-            tree.append(next_layer)
-
-        for layer in tree:
-            vessel_layer = []
-            for exponents in layer:
-                vessel_layer.append((alpha ** exponents[0]) * (beta ** exponents[1]) * initial_r * 2)
-            self.vesselDlist.append(vessel_layer)
-
-        # create the blood vessel instances
+        # add r_min into the block dict
+        self.block_dict["D_min"] = d_min
+        initial_d = initial_r * 2
+        # initialize counting values
         vessel_id = 0
-        for i, layer in enumerate(self.vesselDlist):
-            for j, vesselD in enumerate(layer):
-                R, C, L, l = self.calc_zero_d_values(vesselD)
-                name = " " # to implement later
-                # generate essentially a config file for the BloodVessel instances
-                vessel_info = {"vessel_id": vessel_id,    # mimic input json file
-                               "vessel_length": l,
-                               "vessel_D": vesselD,
-                               "vessel_name": name,
-                               "generation": i,
-                               "zero_d_element_type": "BloodVessel",
-                               "zero_d_element_values": {
-                                   "R_poiseulle": R,
-                                   "C": C,
-                                   "L": L
-                               }}
-                self.block_dict["vessels"].append(vessel_info)
+        junc_id = 0
+        # initialize the root vessel of the tree
+        self.root = TreeVessel.create_vessel(0, 0, initial_d, self.params["eta"])
+        self.root.name = self.name
+        self.block_dict["vessels"].append(self.root.info)
+        queue = [self.root]
 
-                # make a junction coming off of this vessel
-                if i < len(self.vesselDlist[:-1]):
-                    inlet_vessels = [vessel_id]
-                    inlet_area = [np.pi * ((vesselD / 2) ** 2)] # in case this is needed for BloodVesselJunction
-                    outlet_vessels = [2*vessel_id + 1,
-                                      2*vessel_id + 2]
-                    outlet_area = [np.pi * ((self.vesselDlist[i + 1][2 * j] / 2) ** 2), # in case this is needed for BloodVesselJunction
-                                   np.pi * ((self.vesselDlist[i + 1][(2 * j) + 1] / 2) ** 2)]
-                    # make dictionary for junction info
-                    junction_info = {"inlet_vessels": inlet_vessels,
-                                     "junction_name": "J" + str(j),
-                                     "outlet_vessels": outlet_vessels}
-                    self.block_dict["junctions"].append(junction_info)
-                # track vessel id in the tree
+        while len(queue) > 0:
+            q_id = 0
+            current_vessel = queue.pop(q_id)
+            creating_vessels = True
+            while current_vessel.collapsed:
+                if len(queue) == 0:
+                    creating_vessels = False
+                    break
+                current_vessel = queue.pop(q_id)
+            if not creating_vessels:
+                break
+
+            if not current_vessel.collapsed:
+                next_gen = current_vessel.gen + 1
+                # create left vessel
                 vessel_id += 1
+                left_dia = alpha * current_vessel.d
+                current_vessel.left = TreeVessel.create_vessel(vessel_id, next_gen, left_dia, self.params["eta"])
+                # current_vessel.left.create_vessel_info(vessel_id,next_gen, left_dia)
+                queue.append(current_vessel.left)
+                self.block_dict["vessels"].append(current_vessel.left.info)
+                if left_dia < d_min:
+                    current_vessel.left.collapsed = True
 
-    def calc_zero_d_values(self, vesselD):
-        # calculate zero_d values based on an arbitrary vessel diameter
-        r = vesselD / 2
-        R = 8 * self.params["eta"] * self.params["l"] / (np.pi * r ** 4)
-        C = 0  # to implement later
-        L = 0  # to implement later
-        l = 12.4 * r ** 1.1  # from ingrid's paper
+                # create right vessel
+                vessel_id += 1
+                right_dia = beta * current_vessel.d
+                current_vessel.right = TreeVessel.create_vessel(vessel_id, next_gen, right_dia, self.params["eta"])
+                # current_vessel.right.info = self.create_vessel_info(vessel_id, next_gen, right_dia)
+                queue.append(current_vessel.right)
+                self.block_dict["vessels"].append(current_vessel.right.info)
+                if right_dia < d_min:
+                    current_vessel.right.collapsed = True
 
-        return R, C, L, l
+                # add a junction
+                junction_info = {"inlet_vessels": [current_vessel.id],
+                                 "junction_name": "J" + str(junc_id),
+                                 "outlet_vessels": [current_vessel.left.id, current_vessel.left.id]}
+                self.block_dict["junctions"].append(junction_info)
+                junc_id += 1
 
 
     def update_zero_d_params(self):
@@ -192,45 +172,32 @@ class StructuredTreeOutlet():
             vessel["vessel_length"] = l
 
 
-    def calculate_resistance(self):
-        R_mat = []
-        for layer in self.vesselDlist:
-            for vesselD in layer:
-                # need to add in fahraeus-Lindqvist effect
-                pass
-            R_mat.append([8 * self.params["eta"] * self.params["l"] / (np.pi * (vesselD / 2) ** 4) for vesselD in layer])
-        R_tot = []
-        for i, layer in enumerate(reversed(R_mat[:-1])): # loop through all but the last layer in a reversed manner
-            for j, r in enumerate(layer):
-
-                r_add = 1 / ((1 / R_mat[-1 - i][2*j]) + (1 / R_mat[-1 - i][2 * j + 1]))
-                layer[j] = r + r_add
-            R_tot.append(layer)
-        R_tot = R_tot[-1][0]
-        ## need to figure out how to enumerate this correctly in some way and update the resistances for each vessel as you move up the tree
-        # print(R_mat[-1])
-        return R_tot
-
-
     def adapt_constant_wss(self, Q, Q_new, disp=False):
-        # adapt the radius of the vessel based on the constant shear stress assumption
-        R_old = self.calculate_resistance() # calculate pre-adaptation resistance
+        R_old = self.root.R_eq  # calculate pre-adaptation resistance
 
-        for vessel in self.block_dict["vessels"]: # update the block_dict
-            r = vessel.get("vessel_D") / 2
-            r_new = (Q_new / Q)**(1/3) * r
-            vessel["vessel_D"] = r_new * 2
+        def constant_wss(d, Q=Q, Q_new=Q_new):
+            # adapt the radius of the vessel based on the constant shear stress assumption
+            return (Q_new / Q) ** (1 / 3) * d
 
-        self.vesselDlist = create_vesselDlist(self.block_dict["vessels"]) # update the vesselDlist
-        self.block_dict["adaptations"] += 1  # keep track of how many times the tree has been adapted
-        self.update_zero_d_params()
-        R_new = self.calculate_resistance() # calculate post-adaptation resistance
+        def update_diameter(vessel, update_func):
+            # preorder traversal to update the diameters of all the vessels in the tree
+            if vessel:
 
+                vessel.d = update_func(vessel.d)
+                vessel.update_vessel_info()
+                update_diameter(vessel.left, update_func)
+                update_diameter(vessel.right, update_func)
+
+        update_diameter(self.root, constant_wss)
+
+        # self.root.update_vessel_info()
+
+        R_new = self.root.R_eq
         if disp: # display change in resistance if necessary
+            print("R_new = " + str(R_new) + ", R_old = " + str(R_old) + "\n")
             print("the change in resistance is "+ str(R_new - R_old))
 
         return R_new
-
 
     def adapt_pries_secomb(self):
         # adapt the tree based the pries and secomb model for diameter change
@@ -249,20 +216,21 @@ class StructuredTreeOutlet():
         r_guess = self.initialD / 2
 
         def r_min_objective(radius):
-            self.build_tree(radius[0], optimized=True)
-            # print(self.block_dict)
-            R = self.calculate_resistance()
+            self.build_tree(radius[0], optimizing=True)
+            R = self.root.R_eq
             R_diff = (Resistance - R)**2
             return R_diff
 
-        bounds = Bounds(lb=0.049, ub=self.initialD) # minimum is r_min
+        bounds = Bounds(lb=0.005) # minimum is r_min
         r_final = minimize(r_min_objective,
                            r_guess,
-                           options={"disp": False},
+                           options={"disp": True},
+                           method='Nelder-Mead',
                            bounds=bounds) # Nelder mead doesn't seem to work here
-        R_final = self.calculate_resistance()
-        with open(log_file, "a") as log:
-            log.write("     the optimized radius is " + str(r_final.x))
+        R_final = self.root.R_eq
+        if log_file is not None:
+            with open(log_file, "a") as log:
+                log.write("     the optimized radius is " + str(r_final.x))
         return r_final.x, R_final
 
     def optimize_alpha_beta(self, Resistance=5.0, log_file=None):
@@ -274,8 +242,8 @@ class StructuredTreeOutlet():
         """
 
         def r_min_objective(params):
-            self.build_tree(params[0], optimized=True, alpha=params[1], beta=params[2])
-            R = self.calculate_resistance()
+            self.build_tree(params[0], optimizing=True, alpha=params[1], beta=params[2])
+            R = self.root.R_eq
             R_diff = (Resistance - R) ** 2
             return R_diff
 
@@ -289,7 +257,7 @@ class StructuredTreeOutlet():
                            method='trust-constr',
                            constraints=param_constraints,
                            bounds=param_bounds)
-        R_final = self.calculate_resistance()
+        R_final = self.root.R_eq
         # write a log file of the optimization results
         with open(log_file, "a") as log:
             log.write("     Resistance after optimization is " + str(R_final) + "\n")
@@ -298,6 +266,7 @@ class StructuredTreeOutlet():
             log.write("     the optimized alpha value is " + str(r_final.x[2]) + "\n")
 
         return r_final.x[0], R_final
+
 
 # method to generate vesselDlist if tree config already exists
 class VesselD:

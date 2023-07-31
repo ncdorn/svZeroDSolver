@@ -1,5 +1,6 @@
 import csv
 import numpy as np
+import matplotlib.pyplot as plt
 import math
 
 # utilities for working with structured trees
@@ -14,24 +15,35 @@ def get_mpa_pressure(result_df, branch_name):
     return pressures, systolic_p, diastolic_p, mean_p
 
 
-def get_outlet_q(config, result_df, steady=False):
-    # get the flowrate at the outlets of a model
-    outlet_vessels = find_outlets(config)
-    q_out = [get_df_data(result_df, 'flow_out', branch_name) for branch_name in outlet_vessels]
-    if steady:
-        return [q[-1] for q in q_out]
+def get_outlet_data(config, result_df, data_name, steady=False):
+    # get data at the outlets of a model
+    outlet_vessels, outlet_d = find_outlets(config)
+    if 'wss' in data_name:
+        data_out = []
+        for i, branch_name in enumerate(outlet_vessels):
+            q_out = get_df_data(result_df, 'flow_out', branch_name)
+            data_out.append([q * 4 * config["simulation_parameters"]["viscosity"] / (np.pi * outlet_d[i]) for q in q_out])
     else:
-        return q_out
+        data_out = [get_df_data(result_df, data_name, branch_name) for branch_name in outlet_vessels]
+    if steady:
+        return [data[-1] for data in data_out]
+    else:
+        return data_out
+
 
 
 def find_outlets(config):
     # find the outlet vessels in a model
     outlet_vessels = []
+    outlet_d = []
     for vessel_config in config["vessels"]:
         if "boundary_conditions" in vessel_config:
             if "outlet" in vessel_config["boundary_conditions"]:
                 outlet_vessels.append('V' + str(vessel_config["vessel_id"]))
-    return outlet_vessels
+                d = ((128 * config["simulation_parameters"]["viscosity"] * vessel_config["vessel_length"]) /
+                     (np.pi * vessel_config["zero_d_element_values"].get("R_poiseuille"))) ** (1 / 4)
+                outlet_d.append(d)
+    return outlet_vessels, outlet_d
 
 
 def get_df_data(result_df, data_name, branch_name):
@@ -163,7 +175,31 @@ def convert_RCR_to_R(config, Pd=10 * 1333.22):
 
             return Pd
 
+def add_Pd(config, Pd = 10 * 1333.22):
+    for bc_config in config["boundary_conditions"]:
+        if "RESISTANCE" in bc_config["bc_type"]:
+            bc_config["bc_values"]["Pd"] = Pd
 # this is some random code that may need to be used in the non-steady state case
+def log_optimization_results(log_file, result, name: str=None):
+
+    with open(log_file, "a") as log:
+        log.write(name + "optimization completed! \n")
+        log.write("     Optimization solution: " + str(result.x) + "\n")
+        log.write("     Objective function value: " + str(result.fun) + "\n")
+        log.write("     Number of iterations: " + str(result.nit) + "\n")
+
+
+def plot_optimization_progress(fun, save=False, path=None):
+    plt.clf()
+    plt.plot(range(len(fun)), fun, marker='o')
+    plt.xlabel('Iterations')
+    plt.ylabel('Objective Function Value')
+    plt.title('Optimization Progress')
+    plt.yscale('log')
+    plt.pause(0.001)
+    if save:
+        plt.savefig(str(path) + '/optimization_result.png')
+
 '''
 def scale_inflow(config, Q_target):
     for bc_config in config['boundary_conditions']:
