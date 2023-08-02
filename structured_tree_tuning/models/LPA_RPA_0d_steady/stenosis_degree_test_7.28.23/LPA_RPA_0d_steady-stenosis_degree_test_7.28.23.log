@@ -28,7 +28,7 @@ Writing result to file...
 ** RESULT COMPARISON ** 
      preop outlet flowrates: [50.59599913949437, 46.70400086050566]
      pre-adaptation outlet flowrates: [45.711887960746466, 51.58811203925316]
-     post-adaptation outlet flowrates: [38.93378819682471, 58.36621180317613]
+     post-adaptation outlet flowrates: [41.683887482080905, 55.616112517919866]
  
 Simulation completed!     LPA and RPA branches identified: [1, 4]** repairing all stenoses ** 
      vessel 1 has been repaired 
@@ -41,7 +41,7 @@ Writing result to file...
 ** RESULT COMPARISON ** 
      preop outlet flowrates: [50.59599913949437, 46.70400086050566]
      pre-adaptation outlet flowrates: [41.19440421256483, 56.10559578743472]
-     post-adaptation outlet flowrates: [30.597818389173067, 66.70218161082818]
+     post-adaptation outlet flowrates: [35.80617703142915, 61.49382296857017]
  
 Simulation completed!     LPA and RPA branches identified: [1, 4]** repairing all stenoses ** 
      vessel 1 has been repaired 
@@ -54,6 +54,6 @@ Writing result to file...
 ** RESULT COMPARISON ** 
      preop outlet flowrates: [50.59599913949437, 46.70400086050566]
      pre-adaptation outlet flowrates: [32.75508920698241, 64.54491079301768]
-     post-adaptation outlet flowrates: [19.38084605530292, 77.91915394469898]
+     post-adaptation outlet flowrates: [24.8515369412236, 72.44846305877651]
  
 Simulation completed!

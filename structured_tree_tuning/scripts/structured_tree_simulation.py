@@ -7,6 +7,7 @@ import numpy as np
 import json
 from struct_tree_utils import *
 from stree_data_processing import *
+from stree_visualization import *
 from scipy.optimize import minimize, Bounds
 from svzerodsolver.model.structuredtreebc import StructuredTreeOutlet
 import os
@@ -140,18 +141,20 @@ def construct_trees(config: dict, log_file=None, vis_trees=False, fig_dir=None):
                         R = bc["bc_values"]["R"]
                         print(R)
                 # write to log file for debugging
-                with open(log_file, "a") as log:
-                    log.write("** building tree for resistance: " + str(R) + " ** \n")
+                if log_file is not None:
+                    with open(log_file, "a") as log:
+                        log.write("** building tree for resistance: " + str(R) + " ** \n")
                 # outlet_tree.optimize_tree_radius(R)
                 outlet_tree.optimize_tree_radius(R, log_file)
                 # write to log file for debugging
-                with open(log_file, "a") as log:
-                    log.write("     the number of vessels is " + str(len(outlet_tree.block_dict["vessels"])) + "\n")
+                if log_file is not None:
+                    with open(log_file, "a") as log:
+                        log.write("     the number of vessels is " + str(len(outlet_tree.block_dict["vessels"])) + "\n")
                 vessel_config["tree"] = outlet_tree.block_dict
                 roots.append(outlet_tree.root)
 
-    if vis_trees:
-        visualize_trees(config, roots, fig_dir=fig_dir, fig_name='_preop')
+    # if vis_trees:
+    #     visualize_trees(config, roots, fig_dir=fig_dir, fig_name='_preop')
 
     return roots
 
@@ -176,13 +179,14 @@ def calculate_flow(preop_config: dict, repair=None, repair_degree=1, log_file=No
     return preop_result, postop_result, postop_config
 
 
-def adapt_trees(config, roots, preop_result, postop_result):
+def adapt_trees(config, preop_roots, preop_result, postop_result):
     preop_q = get_outlet_data(config, preop_result, 'flow_out', steady=True)
     postop_q = get_outlet_data(config, postop_result, 'flow_out', steady=True)
     # q_diff = [postop_q[i] - q_old for i, q_old in enumerate(preop_q)]
     adapted_config = config
     outlet_idx = 0 # index through outlets
     R_new = []
+    roots = copy.deepcopy(preop_roots)
     adapted_roots = []
     for vessel_config in adapted_config["vessels"]:
         if "boundary_conditions" in vessel_config:
@@ -191,12 +195,13 @@ def adapt_trees(config, roots, preop_result, postop_result):
                     if root.name in vessel_config["tree"]["name"]:
                         outlet_tree = StructuredTreeOutlet.from_outlet_vessel(vessel_config, config["simulation_parameters"], tree_exists=True, root=root)
                         R_new.append(outlet_tree.adapt_constant_wss(preop_q[outlet_idx], postop_q[outlet_idx], disp=False))
+                        adapted_roots.append(outlet_tree.root)
                         vessel_config["tree"] = outlet_tree.block_dict
                         outlet_idx +=1
                         # adapted_roots.append(outlet_tree.root)
 
     write_resistances(adapted_config, R_new)
-    return adapted_config, roots
+    return adapted_config, adapted_roots
 
 
 def run_final_flow(config, preop_result, postop_result, output_file, summary_result_file, log_file, condition: str=None):
@@ -266,7 +271,7 @@ def run_simulation(model_dir: str, exp_filename: str, optimized: bool=False, vis
 
     '''
     # make path variable, starting from script dir
-    os.chdir('../models') # cd into models dir
+    os.chdir('structured_tree_tuning/models') # cd into models dir
     modeldir=Path(model_dir) # make pathlib variable
     # experiment name
     expname = exp_filename.replace('.txt', '')
@@ -309,13 +314,13 @@ def run_simulation(model_dir: str, exp_filename: str, optimized: bool=False, vis
         with open(exp_dir + '/preop_config.in') as ff:
             preop_config = json.load(ff)
 
-    roots = construct_trees(preop_config, log_file, vis_trees=vis_trees, fig_dir=str(fig_dir))
-
+    preop_roots = construct_trees(preop_config, log_file, vis_trees=vis_trees, fig_dir=str(fig_dir))
+    # calculate and visualize repair results
     for i, degree in enumerate(repair_degrees):
         condition = 'repair_' + str(degree)
         output_file = expdir / '{}.out'.format(model_dir + '-' + expname)
         preop_result, postop_result, postop_config = calculate_flow(preop_config, repair=repair, repair_degree=degree, log_file=log_file)
-        adapted_config, roots = adapt_trees(postop_config, roots, preop_result, postop_result)
+        adapted_config, postop_roots = adapt_trees(postop_config, preop_roots, preop_result, postop_result)
         # write the config to a file for observation
         with open(str(expdir / "adapted_config") + "_" + str(degree) + ".txt", "w") as ff:
             json.dump(adapted_config, ff)
@@ -332,10 +337,7 @@ def run_simulation(model_dir: str, exp_filename: str, optimized: bool=False, vis
             plot_optimization_progress(obj_fun, save=True, path=str(fig_dir))  # save the plot of the objective function
 
         if vis_trees:
-            visualize_trees(adapted_config, roots, fig_dir=str(fig_dir), fig_name=condition + '_postop')
+            visualize_trees(preop_config, adapted_config, preop_roots, postop_roots, fig_dir=str(fig_dir), fig_name=condition)
 
     print('Experiment complete!')
     os.system('mv ' + model_dir + '/' + exp_filename + ' ' + model_dir + '/' + expname)  # move the experiment file into the experiment directory
-
-
-

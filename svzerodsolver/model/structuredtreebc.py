@@ -1,4 +1,3 @@
-
 import numpy as np
 import random
 from scipy.optimize import minimize, Bounds, LinearConstraint
@@ -66,30 +65,42 @@ class StructuredTreeOutlet():
             return cls(params=params, name="OutletTree" + str(config["vessel_id"]))
 
 
-    def reset_tree(self):
+    def reset_tree(self, keep_root=False):
         """
         reset the block dict if you are generating many iterations of the structured tree to optimize the radius
         Returns: empty block_dict
 
         """
-        self.root = None
+        if keep_root:
+            pass
+        else:
+            self.root = None
         self.block_dict["vessels"] = []
         self.block_dict["junctions"] = []
         self.vesselDlist = []
 
 
-    def build_next_layer(self, layer):
-        """generates the exponents for the next layer of blood vessels given an input layer
-           Args:
-               input layer (list of tuples)
-           Returns:
-               alpha, beta exponents of next layer (list of tuples)"""
-        next_layer = []
-        for vessel in layer:
-            next_layer.append((vessel[0] + 1, vessel[1]))
-            next_layer.append((vessel[0], vessel[1] + 1))
+    def create_block_dict(self):
+        '''
+        create the block dict from a pre-existing root, 
+        for example in the case of adapting the diameter of the vessels
+        '''
+        self.reset_tree(keep_root=True)
+        self.block_dict["vessels"].append(self.root.info)
+        queue = [self.root]
 
-        return next_layer
+        while len(queue) > 0:
+            q_id = 0
+            current_vessel = queue.pop(q_id)
+            # create the block dict for the left vessel
+            if not current_vessel.collapsed:
+                queue.append(current_vessel.left)
+                self.block_dict["vessels"].append(current_vessel.left.info)
+                # create the block dict for the right vessel
+                queue.append(current_vessel.right)
+                self.block_dict["vessels"].append(current_vessel.right.info)
+
+
 
 
 
@@ -190,6 +201,7 @@ class StructuredTreeOutlet():
 
         update_diameter(self.root, constant_wss)
 
+        self.create_block_dict()
         # self.root.update_vessel_info()
 
         R_new = self.root.R_eq

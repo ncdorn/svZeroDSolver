@@ -7,52 +7,14 @@ from math import trunc
 import seaborn as sns
 import random
 
-# BinaryTree class for structured tree visualization (thank you chatGPT)
-class BinaryTree:
-    def __init__(self, value):
-        self.value = value
-        self.left = None
-        self.right = None
-
-# Function to create a binary tree from a list of values
-def create_binary_tree(nodes):
-    if not nodes:
-        return None
-
-    root = BinaryTree(nodes[0])
-    queue = [root]
-    i = 1
-
-    while i < len(nodes):
-        current_node = queue.pop(0)
-
-        if nodes[i] is not None:
-            current_node.left = BinaryTree(nodes[i])
-            queue.append(current_node.left)
-
-        i += 1
-
-        if i >= len(nodes):
-            break
-
-        if nodes[i] is not None:
-            current_node.right = BinaryTree(nodes[i])
-            queue.append(current_node.right)
-
-        i += 1
-
-    return root
-
 def visualize_binary_tree(root,
-                          labels,
-                          # vessel_ds,
-                          vessel_lengths,
+                          node_label,
+                          ax=None,
                           last_vessel=None,
                           edge_labeling=False):
     G = nx.Graph()
     edges = []  # need to figure out how to add variable edge length and labels
     vessel_ds = []
-    print(root.d)
     def traverse(node, parent='outlet'):
         if node is None:
             return
@@ -61,7 +23,8 @@ def visualize_binary_tree(root,
         if parent is not None:
             # set up edges dict to add in edge lengths later
             edges.append((parent, node.id))
-            vessel_ds.append(node.d)
+            vessel_ds.append(node.d) # create the list of vessel diameters for later labeling
+            # could also do this for resistances, etc.
             G.add_edge(parent, node.id)
 
         traverse(node.left, node.id)
@@ -76,17 +39,16 @@ def visualize_binary_tree(root,
 
     pos = nx.nx_agraph.graphviz_layout(G, prog="dot")
     # shift the first two nodes to the center
-    pos[0] = (pos[0][0] + 125, pos[0][1])
+    # pos[0] = (pos[0][0] + 125, pos[0][1])
     # move the outlet right above the first node
-    pos['outlet'] = (pos[0][0], pos[0][1] + 50)
-
-    plt.figure()
+    # pos['outlet'] = (pos[0][0], pos[0][1] + 50)
 
     # need to add in total resistance
     nx.draw_networkx(G,
                      pos,
                      with_labels=True,
-                     labels = labels["nodes"],
+                     labels = node_label,
+                     ax=ax,
                      node_color="red",
                      node_shape='s',
                      node_size=0,
@@ -101,61 +63,53 @@ def visualize_binary_tree(root,
         nx.draw_networkx_edge_labels(G,
                                      pos,
                                      edge_labels=edge_labels,
+                                     ax=ax,
                                      font_size=6
                                      )
 
 
-def build_tree_figure(tree_config, root, last_vessel=None, edge_labeling=False, fig_dir=None, fig_name=None):
+def build_tree_figure(tree_config, root, ax, last_vessel=None, edge_labeling=False, fig_dir=None, fig_name=None):
     vessel_ids = []
-    label_dict = {'nodes': {'outlet': 'outlet D = ' + str(round(tree_config["origin_d"], 3)) + '\n' +
-                                      'tree D = ' + str(round(tree_config["vessels"][0]["vessel_D"], 3))},
-                  'edges': {}}
-    diameters = []
-    lengths = []
+    node_label = {'outlet': 'outlet D = ' + str(round(tree_config["origin_d"], 3)) + '\n' +
+                                      'tree D = ' + str(round(root.d, 3))}
 
-    for vessel in tree_config["vessels"][:last_vessel]:
-        vessel_ids.append(vessel["vessel_id"])
-        label_dict['edges'][vessel["vessel_id"]] = 'R = ' + str(trunc(vessel["zero_d_element_values"].get("R_poiseulle")))
-        diameters.append(vessel["vessel_D"])
-        lengths.append(vessel["vessel_length"])
-    # print(resistances)
-    # print(generations)
-    # structured_tree = create_binary_tree(vessel_ids)
-    structured_tree = root
-    visualize_binary_tree(structured_tree, # visualize the tree
-                          label_dict,
-                          # diameters,
-                          lengths,
-                          last_vessel,
+    visualize_binary_tree(root, # visualize the tree
+                          node_label,
+                          ax=ax,
+                          last_vessel=last_vessel,
                           edge_labeling=edge_labeling)
 
-    plt.title(tree_config["name"] + '_'+ fig_name) # title the tree figure
+    ax.set_title(tree_config["name"] + '_'+ fig_name) # title the tree figure
 
-    if fig_dir is not None: # save the figure if a directory is specified
-        plt.savefig(str(fig_dir) + '/' + tree_config["name"] + '_' + str(fig_name) + '_visualized.png')
-    else:
-        plt.show()
 
-def visualize_trees(config, roots, fig=None, fig_dir=None, fig_name=None):
+def visualize_trees(preop_config, adapted_config, preop_roots, postop_roots, fig_dir=None, fig_name=None):
     # method to visualze all trees
-    fig_num = fig
-    for vessel_config in config["vessels"]:
+
+    for i, vessel_config in enumerate(adapted_config["vessels"]):
         if "boundary_conditions" in vessel_config:
             if "outlet" in vessel_config["boundary_conditions"]:
-                for root in roots:
+                for j, root in enumerate(preop_roots):
                     if root.name in vessel_config["tree"]["name"]:
                         print('building tree vis for ' + root.name)
-                        build_tree_figure(vessel_config["tree"], root, fig_dir=fig_dir, fig_name=fig_name)
-                        # plot_vessels_per_generation()
-                        if fig is not None:
-                            fig_num += 1
+                        # print(root.d, postop_roots[i].d)
+                        fig, axs = plt.subplots(2)
+                        # plot the preop tree visualization
+                        build_tree_figure(preop_config["vessels"][i]["tree"], root, axs[0], fig_name='preop') # need to get tree from preop config
+                        # # plot the postop tree visualization
+                        build_tree_figure(vessel_config["tree"], postop_roots[j], ax=axs[1], fig_name='postop')
+                        plt.suptitle(fig_name)
+                        if fig_dir is not None: # save the figure if a directory is specified
+                            fig.savefig(str(fig_dir) + '/' + vessel_config["tree"]["name"] + '_' + str(fig_name) + '_visualized.png')
+                        else:
+                            fig.show()
 
-def plot_vessels_per_generation(tree_config: dict, name=None):
+
+def plot_vessels_per_generation(tree_config: dict, ax=None, name=None):
     '''
     plot a bar chart for the number of vessels in each tree generation level.
     Args:
         tree_config: config dict of tree
-        name: extra naming convention to add onto the tree["name"]
+        name: extra naming convention to add on>to the tree["name"]
 
     Returns:
         A bar chart of number of vessels plotted against tree generation
@@ -170,8 +124,6 @@ def plot_vessels_per_generation(tree_config: dict, name=None):
         gen_count.append(gen_list.count(i))
 
     # bar chart comparing number of vessels per generation to generation
-    plt.figure()
-    fig, ax = plt.subplots()
 
     bars = ax.bar(range(max(gen_list) + 1),
             gen_count,

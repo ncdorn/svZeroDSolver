@@ -8,6 +8,7 @@ class TreeVessel:
         self.name = name # name of the, tree only has a str in the root node
         self.info = info # vessel info dict
         self.d = self.info["vessel_D"] # diameter
+        self.l = self.info["vessel_length"]
         self._left = None
         self._right = None
         self.collapsed = False

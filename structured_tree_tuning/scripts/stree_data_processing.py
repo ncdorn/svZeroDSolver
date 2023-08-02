@@ -57,7 +57,7 @@ def plot_LPA_RPA_changes_subfigs(fig_dir: Path, condensed_results, title, condit
                          'tau (dyne/cm2)',
                          ax=ax[2], condition=condition)
 
-    plt.title(title)
+    plt.suptitle(title + ' ' + condition)
     plt.tight_layout()
     plt.savefig(str(fig_dir / condition) + '_' + title + '.png')
 
