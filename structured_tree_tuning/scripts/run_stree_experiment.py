@@ -4,9 +4,9 @@ from struct_tree_utils import *
 
 if __name__ == '__main__':
     # name of model to analyze
-    model_name = 'AS1_reduced_steady'
+    model_name = 'AS1_abbrev_stenosed'
     # path to experiment file (json to be loaded as dict)
-    expname = 'AS1_reduced_steady_extensive_8.2.23.txt'
+    expname = 'AS1_abbrev_stenosed_8.3.23.txt'
     '''
         Requirements of experiment params json file:
         "name": name of experiment

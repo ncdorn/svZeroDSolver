@@ -1,0 +1,10 @@
+Experiment directory and log file created. Beginning experiment AS1_abbrev_stenosed_8.3.23...  
+Getting clinical target values... 
+RCR BCs converted to R, Pd = None
+Optimizing preop outlet resistance... 
+0D optimizationoptimization completed! 
+     Optimization solution: [-65.28953258 976.56169213]
+     Objective function value: 8.209859876198905e-10
+     Number of iterations: 177
+Outlet resistances optimized! [-65.28953258 976.56169213]
+** building tree for resistance: -65.28953257733775 ** 
