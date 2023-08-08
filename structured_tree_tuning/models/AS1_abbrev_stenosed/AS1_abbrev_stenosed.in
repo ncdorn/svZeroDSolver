@@ -134,7 +134,7 @@
                 "C": 2.1512395630968065e-08,
                 "L": 6.451968608743011,
                 "R_poiseuille": 39.86398062231073,
-                "stenosis_coefficient": 22.326087500691248
+                "stenosis_coefficient": 10.0
             }
         },
         {
@@ -164,7 +164,7 @@
                 "C": 1.7332586854165202e-07,
                 "L": 2.1859628389851484,
                 "R_poiseuille": 2.7696134027834893,
-                "stenosis_coefficient": 4.693085177781352
+                "stenosis_coefficient": 10.0
             }
         }
     ]

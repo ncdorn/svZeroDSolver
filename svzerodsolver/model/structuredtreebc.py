@@ -211,9 +211,17 @@ class StructuredTreeOutlet():
 
         return R_new
 
-    def adapt_pries_secomb(self):
+    def pries_secomb(self):
         # adapt the tree based the pries and secomb model for diameter change
 
+        S_tau = math.log(tau_w + tau_ref)
+        S_p = -k_p * math.log(tau_e)
+        S_m = k_m * math.log((Q_ref / (Q * H_D)) + 1) # H_D is the hematocrit
+        Sbar_c = 0 # this is a recursive value that depends on the values of S_C in the daughter segments
+        S_c = k_c * (Sbar_c / (Sbar_c + S_0))
+        S_s = -k_s
+
+        S_tot = S_tau + S_p + S_m + S_c + S_s
         pass
 
 

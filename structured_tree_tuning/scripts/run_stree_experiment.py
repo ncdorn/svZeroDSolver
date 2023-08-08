@@ -13,4 +13,4 @@ if __name__ == '__main__':
         "repair type": extensive, proximal or a list of vessels to repair
         "repair degrees": list of ints with degrees of stenosis repair
         '''
-    run_simulation(model_name, expname, optimized=False, vis_trees=True)
+    run_simulation(model_name, expname, optimized=True, vis_trees=True)
