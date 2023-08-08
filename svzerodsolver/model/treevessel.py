@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 # class for recursive generation of a structured tree
 
@@ -25,7 +26,11 @@ class TreeVessel:
         if diameter > .3:
             viscosity = eta
         else:
-            viscosity = eta # implement fahraeus lindkvist later
+            H_d = 0.45 # hematocrit
+            u_45 = 6 * math.exp(-0.085 * diameter) + 3.2 - 2.44 * math.exp(-0.06 * diameter ** 0.645)
+            C = (0.8 + math.exp(-0.075 * diameter)) * (-1 + (1 + 10 ** -11 * diameter ** 12) ** -1) + (1 + 10 ** -11 * diameter ** 12) ** -1
+            viscosity = .012 * (1 + (u_45 - 1) * (((1 - H_d) ** C - 1) / ((1 - 0.45) ** C - 1)) * (diameter / (diameter - 1.1)) ** 2) * (diameter / (diameter - 1.1)) ** 2
+            print(viscosity)
         R, C, L, l = cls.calc_zero_d_values(cls, diameter, viscosity)
         # print(R, C, L, l)
         name = " "  # to implement later
