@@ -83,6 +83,7 @@ class GeneralizedAlpha:
         Assemble block matrices into global matrices
         """
         for bl in block_list:
+            # print(bl.name)
             bl.assemble(self.mat)
 
     def step(self, y, ydot, time, block_list):

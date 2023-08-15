@@ -34,7 +34,7 @@ from .block import Block
 
 
 class BloodVessel(Block):
-    r"""Resistor-capacitor-inductor blood vessel with optional stenosis.
+    """Resistor-capacitor-inductor blood vessel with optional stenosis.
 
     Models the mechanical behavior of a bloodvessel with optional stenosis.
 

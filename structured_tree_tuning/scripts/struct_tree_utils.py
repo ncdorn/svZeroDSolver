@@ -2,6 +2,7 @@ import csv
 import numpy as np
 import matplotlib.pyplot as plt
 import math
+from svzerodsolver import runner
 
 # utilities for working with structured trees
 
@@ -18,19 +19,16 @@ def get_mpa_pressure(result_df, branch_name):
 def get_outlet_data(config, result_df, data_name, steady=False):
     # get data at the outlets of a model
     outlet_vessels, outlet_d = find_outlets(config)
+
     if 'wss' in data_name:
         data_out = []
         for i, branch_name in enumerate(outlet_vessels):
-            q_out = get_df_data(result_df, 'flow_out', branch_name)
+            q_out = get_df_data(result_df, 'flow_out', branch_name, steady=steady)
             data_out.append([q * 4 * config["simulation_parameters"]["viscosity"] / (np.pi * outlet_d[i]) for q in q_out])
     else:
-        data_out = [get_df_data(result_df, data_name, branch_name) for branch_name in outlet_vessels]
-    if steady:
-        return [data[-1] for data in data_out]
-    else:
-        return data_out
+        data_out = [get_df_data(result_df, data_name, branch_name, steady=steady) for branch_name in outlet_vessels]
 
-
+    return data_out
 
 def find_outlets(config):
     # find the outlet vessels in a model
@@ -46,13 +44,17 @@ def find_outlets(config):
     return outlet_vessels, outlet_d
 
 
-def get_df_data(result_df, data_name, branch_name):
+def get_df_data(result_df, data_name, branch_name, steady=False):
     # get data from a dataframe based on a data name and branch name
     data = []
     for idx, name in enumerate(result_df['name']):
-        if str(branch_name) in name:
+        if str(branch_name) == name:
             data.append(result_df.loc[idx, data_name])
-    return data
+    if steady:
+        return data[-1]
+    else:
+        return data
+
 
 
 def get_resistances(config):
@@ -200,9 +202,98 @@ def plot_optimization_progress(fun, save=False, path=None):
     if save:
         plt.savefig(str(path) + '/optimization_result.png')
 
+def calculate_tree_flow(simparams: dict, tree_config: dict, flow_out: float, P_d: float):
+    # create a config file for the tree and calculate flow through it
+    if len(flow_out) == 1:
+        flow_out = [flow_out[0],] * 2
+    tree_calc_config = {
+        "boundary_conditions": [
+            {
+                "bc_name": "INFLOW",
+                "bc_type": "FLOW",
+                "bc_values": {
+                    "Q": flow_out,
+                    "t": np.linspace(0.0, 1.0, num=len(flow_out)).tolist()
+                }
+            },
+            {
+                "bc_name": "P_d",
+                "bc_type": "PRESSURE",
+                "bc_values": {
+                    "P": [P_d,] * 2,
+                    "t": [
+                        0.0,
+                        1.0
+                    ]
+                }
+            },
+        ],
+        "junctions": tree_config["junctions"],
+        "simulation_parameters": simparams,
+        "vessels": tree_config["vessels"]
+    }
+
+    tree_result = runner.run_from_config(tree_calc_config)
+
+    return tree_result
+
+def assign_flow_to_root(result, root, steady=False):
+    
+    def assign_flow(vessel):
+        if vessel:
+            # assign flow values to the vessel
+            vessel.Q = get_df_data(result, 'flow_out', 'V' + str(vessel.id), steady=steady)
+            vessel.P_in = get_df_data(result, 'pressure_in', 'V' + str(vessel.id), steady=steady)
+            vessel.t_w = vessel.Q * 4 * vessel.eta / (np.pi * vessel.d)
+            # recursive step
+            assign_flow(vessel.left)
+            assign_flow(vessel.right)
+    
+    assign_flow(root)
+
+
+def optimize_pries_secomb(ps_params, trees, simparams, q_outs, P_d=1333.2, steady=True):
+    
+    # initialize and calculate the Pries and Secomb parameters in the TreeVessel objects via a postorder traversal
+    dD_list = [] # initialize the list of dDs for the outlet calculation
+    for i, tree in enumerate(trees):
+        SS_dD = 0.0 # sum of squared dDs initial guess
+        converged = False
+        threshold = 0.1
+        while not converged:
+            tree_solver_config = tree.tree_solver_input([q_outs[i]], P_d)
+            tree_result = runner.run_from_config(tree_solver_config)
+            assign_flow_to_root(tree_result, tree.root, steady=steady)
+
+            next_SS_dD = 0.0 # initializing sum of squared dDs, value to minimize
+            def stimulate(vessel):
+                if vessel:
+                    stimulate(vessel.left)
+                    stimulate(vessel.right)
+                    vessel_dD = vessel.adapt_pries_secomb(ps_params)
+                    nonlocal next_SS_dD
+                    next_SS_dD += vessel_dD ** 2
+            stimulate(tree.root)
+
+            dD_diff = abs(next_SS_dD ** 2 - SS_dD ** 2)
+            if dD_diff < threshold:
+                converged = True
+            
+            SS_dD = next_SS_dD
+            print(dD_diff)
+        print('Pries and Secomb integration completed!')
+        dD_list.append(next_SS_dD)
+
+    SSE = sum(dD ** 2 for dD in dD_list)
+
+    return SSE
+
+
+
+
 '''
 def scale_inflow(config, Q_target):
-    for bc_config in config['boundary_conditions']:
+for bc_config in config['boundary_conditions']:
         if bc_config["bc_name"] == 'inflow':
 
     Q_avg = np.mean(inflow_wave)
