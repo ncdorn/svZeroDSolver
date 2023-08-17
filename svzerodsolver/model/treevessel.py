@@ -8,13 +8,15 @@ class TreeVessel:
     def __init__(self, info: dict, name: str = None):
         self.name = name # name of the, tree only has a str in the root node
         self.info = info # vessel info dict
-        self.d = self.info["vessel_D"] # diameter
+        self._d = self.info["vessel_D"] # diameter
         self.l = self.info["vessel_length"]
         self.id = self.info["vessel_id"]
         self.gen = self.info["generation"]
         self.eta = self.info["viscosity"]
         self._R = self.info["zero_d_element_values"].get("R_poiseuille")
         self._R_eq = self._R # this is the initial value, not dependent on left and right
+        self.C = self.info["zero_d_element_values"].get("C")
+        self.L = self.info["zero_d_element_values"].get("L")
         # flow values, based on Poiseulle assumption
         self.P_in = 0.0
         self.Q = 0.0
@@ -104,6 +106,15 @@ class TreeVessel:
         self._collapsed = new_collapsed
         self.add_collapsed_bc()
 
+    # method to change d and zero d parameters which are dependent on d
+    @property
+    def d(self):
+        return self._d
+
+    @d.setter
+    def d(self, new_d):
+        self._d = new_d
+        self.update_vessel_info()
 
     def calc_zero_d_values(self, vesselD, eta):
         # calculate zero_d values based on an arbitrary vessel diameter
@@ -116,7 +127,7 @@ class TreeVessel:
         return R, C, L, l
 
     def update_vessel_info(self):
-        R, C, L, l = self.calc_zero_d_values(self.d, self.eta)
+        R, C, L, l = self.calc_zero_d_values(self._d, self.eta)
         self.info["vessel_length"] = l
         self.info["vessel_D"] = self.d
         self.info["zero_d_element_values"]["R_poiseulle"] = R
@@ -131,27 +142,27 @@ class TreeVessel:
             "outlet": "P_d"
         }
 
-    def initialize_pries_secomb(self, ps_params, H_d=0.45):
-        # intialize the pries and secomb parameters which are required for upstream adaptation calculations
-        # namely, S_m = f(k_m, Q_ref, H_D)
-        # this will have to be done in a postorder traversal
-        # ps_params in the following form [k_p, k_m, k_c, k_s, S_0, tau_ref, Q_ref, L]
-        self.k_p, self.k_m, self.k_c, self.k_s, self.S_0, self.tau_ref, self.Q_ref, self.L = tuple(ps_params)
-        self. H_d = H_d # hematocrit
+    # def initialize_pries_secomb(self, ps_params, H_d=0.45):
+    #     # intialize the pries and secomb parameters which are required for upstream adaptation calculations
+    #     # namely, S_m = f(k_m, Q_ref, H_D)
+    #     # this will have to be done in a postorder traversal
+    #     # ps_params in the following form [k_p, k_m, k_c, k_s, S_0, tau_ref, Q_ref, L]
+    #     self.k_p, self.k_m, self.k_c, self.k_s, self.S_0, self.tau_ref, self.Q_ref, self.L = tuple(ps_params)
+    #     self. H_d = H_d # hematocrit
+    #
+    #
+    #     self.S_m = self.k_m * math.log(self.Q_ref / (self.Q * self.H_d) + 1)
+    #     self.Sbar_c = 0.0 # initialize sbar_c
+    #
+    #     if not self.collapsed:
+    #         if self.left.Sbar_c > 0:
+    #             self.Sbar_c = self.left.S_m + self.right.S_m + self.left.Sbar_c * math.exp(-self.left.l / self.L) + self.right.Sbar_c * math.exp(-self.right.l / self.L)
+    #         else:
+    #             self.Sbar_c = self.left.S_m + self.right.S_m
 
 
-        self.S_m = self.k_m * math.log(self.Q_ref / (self.Q * self.H_d) + 1)
-        self.Sbar_c = 0.0 # initialize sbar_c
 
-        if not self.collapsed:
-            if self.left.Sbar_c > 0:
-                self.Sbar_c = self.left.S_m + self.right.S_m + self.left.Sbar_c * math.exp(-self.left.l / self.L) + self.right.Sbar_c * math.exp(-self.right.l / self.L)
-            else:
-                self.Sbar_c = self.left.S_m + self.right.S_m
-
-
-
-    def adapt_pries_secomb(self, ps_params, H_d=0.45):
+    def adapt_pries_secomb(self, ps_params, dt, H_d=0.45):
         # calculate the pries and secomb parameters for microvascular adaptation
         # this will have to be done in a postorder traversal
         # ps_params in the following form [k_p, k_m, k_c, k_s, S_0, tau_ref, Q_ref, L]
@@ -181,7 +192,7 @@ class TreeVessel:
 
         self.S_tot = self.S_tau + self.S_p + self.S_m + self.S_c + self.S_s
 
-        self.dD = self.d * self.S_tot
+        self.dD = self.d * self.S_tot * dt
 
         if self.d + self.dD > 0.0:
             self.d += self.dD

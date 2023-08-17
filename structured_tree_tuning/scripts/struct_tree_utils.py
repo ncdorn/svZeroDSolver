@@ -252,14 +252,14 @@ def assign_flow_to_root(result, root, steady=False):
     assign_flow(root)
 
 
-def optimize_pries_secomb(ps_params, trees, simparams, q_outs, P_d=1333.2, steady=True):
+def optimize_pries_secomb(ps_params, trees, q_outs, dt=0.01, P_d=1333.2, steady=True):
     
     # initialize and calculate the Pries and Secomb parameters in the TreeVessel objects via a postorder traversal
     dD_list = [] # initialize the list of dDs for the outlet calculation
     for i, tree in enumerate(trees):
         SS_dD = 0.0 # sum of squared dDs initial guess
         converged = False
-        threshold = 0.1
+        threshold = 10 ** -5
         while not converged:
             tree_solver_config = tree.tree_solver_input([q_outs[i]], P_d)
             tree_result = runner.run_from_config(tree_solver_config)
@@ -270,7 +270,7 @@ def optimize_pries_secomb(ps_params, trees, simparams, q_outs, P_d=1333.2, stead
                 if vessel:
                     stimulate(vessel.left)
                     stimulate(vessel.right)
-                    vessel_dD = vessel.adapt_pries_secomb(ps_params)
+                    vessel_dD = vessel.adapt_pries_secomb(ps_params, dt)
                     nonlocal next_SS_dD
                     next_SS_dD += vessel_dD ** 2
             stimulate(tree.root)

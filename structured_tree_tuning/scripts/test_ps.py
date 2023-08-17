@@ -52,12 +52,13 @@ def run_from_file(input_file, output_file):
     # ps_params = [k_p, k_m, k_c, k_s, S_0, tau_ref, Q_ref, L]
     ps_params = [1.24, .229, 2.20, .885, .219, 9.66 * 10 ** -7, 1.9974, 5.9764 * 10 ** -4]
 
-    result = minimize(optimize_pries_secomb, 
-                      ps_params, 
-                      args=(outlet_trees, config["simulation_parameters"], q_outs), 
-                      method='Nelder-Mead')
+    SSE = optimize_pries_secomb(ps_params, outlet_trees, q_outs)
+    # result = minimize(optimize_pries_secomb,
+    #                   ps_params,
+    #                   args=(outlet_trees, config["simulation_parameters"], q_outs),
+    #                   method='Nelder-Mead')
     # SSE = optimize_pries_secomb(ps_params, [outlet_tree], config["simulation_parameters"], [q_out])
-    print(result)
+    # print(result)
     # root.adapt_diameter()
 
 

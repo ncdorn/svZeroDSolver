@@ -2,6 +2,7 @@ Experiment directory and log file created. Beginning experiment AS1_abbrev_steno
 Getting clinical target values... 
 RCR BCs converted to R, Pd = None
 Optimizing preop outlet resistance... 
+<<<<<<< Updated upstream
 0D optimizationoptimization completed! 
      Optimization solution: [558.3583541  728.71016867]
      Objective function value: 2.427467011328184e-09
@@ -36,3 +37,5 @@ Writing result to file...
      post-adaptation outlet flowrates: [55.17295907193443, 42.12704092806077]
  
 Simulation completed!
+=======
+>>>>>>> Stashed changes
