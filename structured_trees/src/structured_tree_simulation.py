@@ -6,10 +6,10 @@ from pathlib import Path
 import numpy as np
 import json
 from struct_tree_utils import *
-from stree_data_processing import *
-from stree_visualization import *
+from post_processing.stree_data_processing import *
+from post_processing.stree_visualization import *
 from scipy.optimize import minimize, Bounds
-from svzerodsolver.model.structuredtreebc import StructuredTreeOutlet
+from structuredtreebc import StructuredTreeOutlet
 import os
 import matplotlib.pyplot as plt
 
@@ -267,7 +267,7 @@ def generate_results(result_df):
 # Press the green button in the gutter to run the script.
 
 
-def run_simulation(model_dir: str, exp_filename: str, optimized: bool=False, vis_trees: bool=False):
+def run_simulation(model_dir: str, expname: str, optimized: bool=False, vis_trees: bool=False):
     '''
     run a structured tree simulation with experimental conditions
     Args:
@@ -279,10 +279,10 @@ def run_simulation(model_dir: str, exp_filename: str, optimized: bool=False, vis
 
     '''
     # make path variable, starting from script dir
-    os.chdir('structured_tree_tuning/models') # cd into models dir
+    os.chdir('structured_trees/models') # cd into models dir
     modeldir=Path(model_dir) # make pathlib variable
     # experiment name
-    expname = exp_filename.replace('.txt', '')
+    exp_filename = expname + '.txt'
     # load experiment file
     if optimized:
         os.system(

@@ -1,36 +1,16 @@
-Experiment directory and log file created. Beginning experimentrecursive_tree_test_7.26.23...  
-Getting clinical target values... 
-RCR BCs converted to R, Pd = None
-Optimizing preop outlet resistance... 
-Outlet resistances optimized! [572.57832733 171.88607516]
-** building tree for resistance: 572.5783273271281 ** 
-     the number of vessels is 859
-** building tree for resistance: 171.8860751591582 ** 
-     the number of vessels is 2611
-** repairing all stenoses ** 
+Experiment directory and log file created. Beginning experiment recursive_tree_test_7.26.23...  
+Outlets have already been optimized. Constructing trees...  
+** building tree for resistance: 572.577249987894 ** 
+     the optimized radius is [0.15]     the number of vessels is 489
+** building tree for resistance: 171.88775652102456 ** 
+     the optimized radius is [0.19442747]     the number of vessels is 975
+     LPA and RPA branches identified: [1, 4]** repairing stenoses in vessels [1, 4] ** 
      vessel 1 has been repaired 
-     vessel 2 has been repaired 
-     vessel 3 has been repaired 
      vessel 4 has been repaired 
-     vessel 5 has been repaired 
-     vessel 6 has been repaired 
 Writing result to file... 
 ** RESULT COMPARISON ** 
-     preop outlet flowrates: [50.59599913949437, 46.70400086050566]
-     pre-adaptation outlet flowrates: [45.711887960746466, 51.58811203925316]
-     post-adaptation outlet flowrates: [41.683887482080905, 55.616112517919866]
- 
-Simulation completed!** repairing all stenoses ** 
-     vessel 1 has been repaired 
-     vessel 2 has been repaired 
-     vessel 3 has been repaired 
-     vessel 4 has been repaired 
-     vessel 5 has been repaired 
-     vessel 6 has been repaired 
-Writing result to file... 
-** RESULT COMPARISON ** 
-     preop outlet flowrates: [41.683887482080905, 55.616112517919866]
-     pre-adaptation outlet flowrates: [29.066717018817915, 68.23328298118115]
-     post-adaptation outlet flowrates: [23.78606327239071, 73.51393672760851]
+     preop outlet flowrates: [50.596051528770786, 46.703948471229225]
+     pre-adaptation outlet flowrates: [50.55939037427066, 46.74060962572935]
+     post-adaptation outlet flowrates: [56.15256088846057, 41.14743911153531]
  
 Simulation completed!

@@ -1,7 +1,7 @@
 import numpy as np
 import random
 from scipy.optimize import minimize, Bounds, LinearConstraint
-from .treevessel import TreeVessel
+from treevessel import TreeVessel
 import math
 
 class StructuredTreeOutlet():

@@ -24,14 +24,18 @@ def get_outlet_data(config, result_df, data_name, steady=False):
         data_out = []
         for i, branch_name in enumerate(outlet_vessels):
             q_out = get_df_data(result_df, 'flow_out', branch_name, steady=steady)
-            data_out.append([q * 4 * config["simulation_parameters"]["viscosity"] / (np.pi * outlet_d[i]) for q in q_out])
+            if steady:
+                data_out.append(q_out * 4 * config["simulation_parameters"]["viscosity"] / (np.pi * outlet_d[i]))
+            else:
+                data_out.append([q * 4 * config["simulation_parameters"]["viscosity"] / (np.pi * outlet_d[i]) for q in q_out])
+                
     else:
         data_out = [get_df_data(result_df, data_name, branch_name, steady=steady) for branch_name in outlet_vessels]
 
     return data_out
 
 def find_outlets(config):
-    # find the outlet vessels in a model
+    # find the outlet vessels in a model, return the vessel id and diameter
     outlet_vessels = []
     outlet_d = []
     for vessel_config in config["vessels"]:
@@ -69,6 +73,7 @@ def get_resistances(config):
 
 
 def write_resistances(config, resistances):
+    # write resistances to the config file
     idx = 0
     for bc_config in config["boundary_conditions"]:
         if bc_config["bc_type"] == 'RESISTANCE':
@@ -150,7 +155,7 @@ def make_inflow_steady(config, Q=97.3):
     convert unsteady inflow to steady
     Args:
         config: input config dict
-        Q: inflow value, default is 97.3
+        Q: mean inflow value, default is 97.3
     Returns:
         updated bc_config
     '''
@@ -178,9 +183,11 @@ def convert_RCR_to_R(config, Pd=10 * 1333.22):
             return Pd
 
 def add_Pd(config, Pd = 10 * 1333.22):
+    # add the distal pressure to the boundary conditions of a config file
     for bc_config in config["boundary_conditions"]:
         if "RESISTANCE" in bc_config["bc_type"]:
             bc_config["bc_values"]["Pd"] = Pd
+
 # this is some random code that may need to be used in the non-steady state case
 def log_optimization_results(log_file, result, name: str=None):
 
@@ -238,7 +245,7 @@ def calculate_tree_flow(simparams: dict, tree_config: dict, flow_out: float, P_d
     return tree_result
 
 def assign_flow_to_root(result, root, steady=False):
-    
+    # assign flow values to the TreeVessel recursion object
     def assign_flow(vessel):
         if vessel:
             # assign flow values to the vessel
