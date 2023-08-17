@@ -197,7 +197,6 @@ def adapt_trees(config, preop_roots, preop_result, postop_result, pries_secomb =
                         outlet_tree = StructuredTreeOutlet.from_outlet_vessel(vessel_config, config["simulation_parameters"], tree_exists=True, root=root)
                         if pries_secomb:
                             # ps_params in the form
-
                             pass
                         else: # constant wss adaptation
                             R_new.append(outlet_tree.adapt_constant_wss(preop_q[outlet_idx], postop_q[outlet_idx], disp=False))

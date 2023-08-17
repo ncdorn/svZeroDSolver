@@ -44,7 +44,6 @@ from .model.resistancebc import ResistanceBC
 from .model.windkesselbc import WindkesselBC
 from .model.mpa_bloodvesseljunction import MPA_BloodVesselJunction
 from .model.RH_LPN import create_RH_LPN
-from .model.structuredtreebc import StructuredTreeOutlet
 
 
 def get_solver_params(config):
