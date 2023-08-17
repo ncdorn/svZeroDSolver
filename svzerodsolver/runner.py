@@ -44,6 +44,7 @@ from .utils import (
 
 
 def run_from_config(parameters):
+    print('running python solver')
     """Run the svZeroDSolver.
 
     Args:
