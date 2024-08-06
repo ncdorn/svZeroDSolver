@@ -55,7 +55,8 @@ Model::Model() {
       {"RESISTANCE", block_factory<ResistanceBC>()},
       {"resistive_junction", block_factory<ResistiveJunction>()},
       {"ValveTanh", block_factory<ValveTanh>()},
-      {"ChamberElastanceInductor", block_factory<ChamberElastanceInductor>()}};
+      {"ChamberElastanceInductor", block_factory<ChamberElastanceInductor>()},
+      {"IMPEDANCE", block_factory<ImpedanceBC>()}};
 }
 
 Model::~Model() {}
@@ -237,9 +238,10 @@ void Model::update_time(SparseSystem &system, double time) {
 
 void Model::update_solution(SparseSystem &system,
                             Eigen::Matrix<double, Eigen::Dynamic, 1> &y,
-                            Eigen::Matrix<double, Eigen::Dynamic, 1> &dy) {
+                            Eigen::Matrix<double, Eigen::Dynamic, 1> &dy,
+                            bool &converged) {
   for (auto block : blocks) {
-    block->update_solution(system, parameter_values, y, dy);
+    block->update_solution(system, parameter_values, y, dy, converged);
   }
 }
 

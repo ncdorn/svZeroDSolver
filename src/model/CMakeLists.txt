@@ -54,6 +54,7 @@ set(CXXSRCS
   ResistiveJunction.cpp
   ValveTanh.cpp
   WindkesselBC.cpp
+  ImpedanceBC.cpp
 )
 
 set(HDRS 
@@ -79,6 +80,7 @@ set(HDRS
   ResistiveJunction.h
   ValveTanh.h
   WindkesselBC.h
+  ImpedanceBC.h
 )
 
 add_library(${lib} OBJECT ${CXXSRCS} ${HDRS})

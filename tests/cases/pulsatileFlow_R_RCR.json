@@ -16,7 +16,7 @@
                                             "inlet pressure (at time = t0) = outlet pressure + Q(t = 0) * R_poiseuille = 4400 + 2.2 * 100 = 4620"
                                    ]
     },
-    "boundary_conditions": [
+"boundary_conditions": [
         {
             "bc_name": "INFLOW",
             "bc_type": "FLOW",

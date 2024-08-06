@@ -70,7 +70,9 @@ void SparseSystem::reserve(Model *model) {
   Eigen::Matrix<double, Eigen::Dynamic, 1> dummy_dy =
       Eigen::Matrix<double, Eigen::Dynamic, 1>::Ones(residual.size());
 
-  model->update_solution(*this, dummy_y, dummy_dy);
+  bool converged = false;
+
+  model->update_solution(*this, dummy_y, dummy_dy, converged);
 
   F.makeCompressed();
   E.makeCompressed();

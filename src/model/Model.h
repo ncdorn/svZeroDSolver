@@ -62,6 +62,7 @@
 #include "ResistiveJunction.h"
 #include "ValveTanh.h"
 #include "WindkesselBC.h"
+#include "ImpedanceBC.h"
 #include "debug.h"
 
 /**
@@ -264,7 +265,8 @@ class Model {
    */
   void update_solution(SparseSystem &system,
                        Eigen::Matrix<double, Eigen::Dynamic, 1> &y,
-                       Eigen::Matrix<double, Eigen::Dynamic, 1> &dy);
+                       Eigen::Matrix<double, Eigen::Dynamic, 1> &dy,
+                       bool &converged);
 
   /**
    * @brief Modify the solution after solving it

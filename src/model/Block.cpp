@@ -81,7 +81,8 @@ void Block::update_time(SparseSystem &system, std::vector<double> &parameters) {
 void Block::update_solution(
     SparseSystem &system, std::vector<double> &parameters,
     const Eigen::Matrix<double, Eigen::Dynamic, 1> &y,
-    const Eigen::Matrix<double, Eigen::Dynamic, 1> &dy) {}
+    const Eigen::Matrix<double, Eigen::Dynamic, 1> &dy,
+    bool &converged) {}
 
 void Block::post_solve(Eigen::Matrix<double, Eigen::Dynamic, 1> &y) {}
 

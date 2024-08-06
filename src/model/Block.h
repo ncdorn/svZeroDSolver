@@ -253,11 +253,13 @@ class Block {
    * @param parameters Parameters of the model
    * @param y Current solution
    * @param dy Current derivate of the solution
+   * @param converged solution convergence status
    */
   virtual void update_solution(
       SparseSystem &system, std::vector<double> &parameters,
       const Eigen::Matrix<double, Eigen::Dynamic, 1> &y,
-      const Eigen::Matrix<double, Eigen::Dynamic, 1> &dy);
+      const Eigen::Matrix<double, Eigen::Dynamic, 1> &dy,
+      bool &converged);
 
   /**
    * @brief Modify the solution after solving it

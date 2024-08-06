@@ -88,6 +88,8 @@ State Integrator::step(const State& old_state, double time) {
   // Count total number of step calls
   n_iter++;
 
+  bool converged = false;
+
   // Non-linear Newton-Raphson iterations
   for (size_t i = 0; i < max_iter; i++) {
     // Initiator: Evaluate the iterates at the intermediate time levels
@@ -97,14 +99,18 @@ State Integrator::step(const State& old_state, double time) {
     y_af += old_state.y + (new_state.y - old_state.y) * alpha_f;
 
     // Update solution-dependent element contribitions
-    model->update_solution(system, y_af, ydot_am);
+
+    model->update_solution(system, y_af, ydot_am, converged);
 
     // Evaluate residual
     system.update_residual(y_af, ydot_am);
 
     // Check termination criterium
     if (system.residual.cwiseAbs().maxCoeff() < atol) {
-      break;
+      converged = true;
+      model->update_solution(system, y_af, ydot_am, converged);
+      
+      break; // need to break loop after solution update
     }
 
     // Abort if maximum number of non-linear iterations is reached
