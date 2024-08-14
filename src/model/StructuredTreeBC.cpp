@@ -28,26 +28,34 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "ImpedanceBC.h"
+#include "StructuredTreeBC.h"
 #include "Model.h"
 
-void ImpedanceBC::setup_dofs(DOFHandler &dofhandler) {
+void StructuredTreeBC::setup_dofs(DOFHandler &dofhandler) {
   Block::setup_dofs_(dofhandler, 1, {});
 }
 
-void ImpedanceBC::update_constant(SparseSystem &system,
+void StructuredTreeBC::update_constant(SparseSystem &system,
                                           std::vector<double> &parameters) {
-  // eqn 0: P_in - zq_conv - P_d = 0
+  // eqn 0: P_in - zq_conv = 0
   system.F.coeffRef(global_eqn_ids[0], global_var_ids[0]) = 1.0;
   // system.F.coeffRef(global_eqn_ids[0], global_var_ids[1]) = z_0;
 }
 
-void ImpedanceBC::update_time(SparseSystem &system,
+void StructuredTreeBC::update_time(SparseSystem &system,
                                       std::vector<double> &parameters) {
+
+  // eqn 0: P_in - zq_conv = 0
+  
+  // printf("zq_conv: %f\n", zq_conv);
+
+  // convolve_zq(parameters);
+  
+  system.C(global_eqn_ids[0]) = -zq_conv;
 
 }
 
-void ImpedanceBC::update_solution(
+void StructuredTreeBC::update_solution(
     SparseSystem &system, std::vector<double> &parameters,
     const Eigen::Matrix<double, Eigen::Dynamic, 1> &y,
     const Eigen::Matrix<double, Eigen::Dynamic, 1> &dy,
@@ -57,7 +65,7 @@ void ImpedanceBC::update_solution(
 
   convolve_zq(parameters, converged);
   
-  system.C(global_eqn_ids[0]) = -zq_conv - parameters[global_param_ids[1]];
+  system.C(global_eqn_ids[0]) = -zq_conv;
 
   if (!converged) {
     q.pop_back(); // remove the most recent value in the q array
@@ -77,12 +85,12 @@ void ImpedanceBC::update_solution(
   }
 
 
-void ImpedanceBC::setup_model_dependent_params() {
+void StructuredTreeBC::setup_model_dependent_params() {
   z_0 = model->get_parameter_value(global_param_ids[0]); // I do not think we need this!
   // num_timesteps = model->sim
 }
 
-void ImpedanceBC::convolve_zq(std::vector<double> &parameters, bool &converged) {
+void StructuredTreeBC::convolve_zq(std::vector<double> &parameters, bool &converged) {
   
   auto T_cardiac = model->cardiac_cycle_period;
   auto t = model->time;
@@ -113,7 +121,7 @@ void ImpedanceBC::convolve_zq(std::vector<double> &parameters, bool &converged) 
 
 }
 
-void ImpedanceBC::printfive(std::vector<double> &vec) {
+void StructuredTreeBC::printfive(std::vector<double> &vec) {
   // printf("q_rev[0:5] = [");
   // for (int i = 0; i < 5; ++i) {
   //   printf("%f,", i, vec[i]);

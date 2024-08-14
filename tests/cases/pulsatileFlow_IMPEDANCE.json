@@ -2068,7 +2068,8 @@
                     1.0955609644462452,
                     1.0977133435512476,
                     1.09986572265625
-                ]
+                ],
+                "Pd": 100000.0
             }
         }
     ],
@@ -2088,7 +2089,7 @@
             "vessel_name": "branch0_seg0",
             "zero_d_element_type": "BloodVessel",
             "zero_d_element_values": {
-                "R_poiseuille": 0.0
+                "R_poiseuille": 100.0
             }
         }
     ]

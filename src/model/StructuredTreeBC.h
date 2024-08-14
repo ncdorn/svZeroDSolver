@@ -28,11 +28,11 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
- * @file ImpedanceBC.h
- * @brief model::ImpedanceBC source file
+ * @file StructuredTreeBC.h
+ * @brief model::StructuredTreeBC source file
  */
-#ifndef SVZERODSOLVER_MODEL_IMPEDANCEBC_HPP_
-#define SVZERODSOLVER_MODEL_IMPEDANCEBC_HPP_
+#ifndef SVZERODSOLVER_MODEL_STRUCTUREDTREEBC_HPP_
+#define SVZERODSOLVER_MODEL_STRUCTUREDTREEBC_HPP_
 
 #include "Block.h"
 #include "Model.h"
@@ -81,19 +81,18 @@
  *
  */
 
-class ImpedanceBC : public Block {
+class StructuredTreeBC : public Block {
  public:
   /**
-   * @brief Construct a new ImpedanceBC object
+   * @brief Construct a new StructuredTreeBC object
    *
    * @param id Global ID of the block
    * @param model The model to which the block belongs
    */
-  ImpedanceBC(int id, Model *model)
+  StructuredTreeBC(int id, Model *model)
       : Block(id, model, BlockType::pressure_bc, BlockClass::boundary_condition,
               {{"t", InputParameter(false, true)},
-               {"Z", InputParameter(false, true)},
-               {"Pd", InputParameter()}}) {}
+               {"Z", InputParameter(false, true)}}) {}
 
   /**
    * @brief Set up the degrees of freedom (DOF) of the block
@@ -177,4 +176,4 @@ class ImpedanceBC : public Block {
 
 };
 
-#endif  // SVZERODSOLVER_MODEL_IMPEDANCEBC_HPP_
+#endif  // SVZERODSOLVER_MODEL_StructuredTreeBC_HPP_
