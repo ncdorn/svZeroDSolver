@@ -95,23 +95,23 @@ void ImpedanceBC::convolve_zq(std::vector<double> &parameters, bool &converged) 
 
   if (t < T_cardiac) {
     z.push_back(parameters[global_param_ids[0]]);
-    if (t < 0.1){
-      printf("updating time for time %f\n", model->time);
-      bool initializing= true;
-      for (int k = 0; k < z.size(); ++k) {
-        if (z[k] > 1000.0) {
-        printf("z > 1000.0 at time %.3f: %4.2f at index %d\n", t, z[k], k);
-        initializing = false;
-        };
-      };
-      if (initializing) {
-        printf("initializing, z = [");
-        for (int k = 0; k < z.size(); ++k) {
-          printf("%4.2f,", z[k]);
-        };
-        printf("]\n");
-      }
-    };
+    // if (t < 0.1){
+    //   printf("updating time for time %f\n", model->time);
+    //   bool initializing= true;
+    //   for (int k = 0; k < z.size(); ++k) {
+    //     if (z[k] > 1000.0) {
+    //     printf("z > 1000.0 at time %.3f: %4.2f at index %d\n", t, z[k], k);
+    //     initializing = false;
+    //     };
+    //   };
+    //   if (initializing) {
+    //     printf("initializing, z = [");
+    //     for (int k = 0; k < z.size(); ++k) {
+    //       printf("%4.2f,", z[k]);
+    //     };
+    //     printf("]\n");
+    //   }
+    // };
 
     if (!converged) {
       z.pop_back();
