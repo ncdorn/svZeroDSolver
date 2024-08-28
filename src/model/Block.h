@@ -241,9 +241,11 @@ class Block {
    *
    * @param system System to update contributions at
    * @param parameters Parameters of the model
+   * @param parameter_arrays Arrays of time-dependent model parameters
    */
   virtual void update_time(SparseSystem &system,
-                           std::vector<double> &parameters);
+                           std::vector<double> &parameters,
+                           std::map<int, std::vector<double>> &parameter_arrays);
 
   /**
    * @brief Update the solution-dependent contributions of the element in a

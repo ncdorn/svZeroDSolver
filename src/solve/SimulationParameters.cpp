@@ -141,7 +141,14 @@ int generate_block(Model& model, const nlohmann::json& block_params_json,
         }
 
         // Add parameters to model
-        new_id = model.add_parameter(time, val, periodic);
+        // if impedance_bc, add array
+        if (block->block_type == BlockType::impedance_bc) {
+          printf("Adding impedance_bc parameter\n");
+          new_id = model.add_parameter(time, val, periodic, true);
+        } else {
+          new_id = model.add_parameter(time, val, periodic, false);
+        }
+
       }
 
       // Get scalar parameter
@@ -338,6 +345,7 @@ void create_boundary_conditions(Model& model, const nlohmann::json& config,
     std::string bc_name = bc_config["bc_name"];
     const auto& bc_values = bc_config["bc_values"];
 
+  
     int block_id = generate_block(model, bc_values, bc_type, bc_name);
 
     // Keep track of closed loop blocks
@@ -350,6 +358,10 @@ void create_boundary_conditions(Model& model, const nlohmann::json& config,
       double time_constant = Rd * C;
       model.update_largest_windkessel_time_constant(std::max(
           model.get_largest_windkessel_time_constant(), time_constant));
+    }
+
+    if (block->block_type == BlockType::impedance_bc) {
+      model.update_has_impedance_bc(true);
     }
 
     if (block->block_type == BlockType::closed_loop_rcr_bc) {

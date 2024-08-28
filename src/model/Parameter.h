@@ -68,7 +68,9 @@ class Parameter {
    * @param periodic Is this parameter periodic with a cardiac cycle?
    */
   Parameter(int id, const std::vector<double>& times,
-            const std::vector<double>& values, bool periodic = true);
+            const std::vector<double>& values, 
+            bool periodic = true,
+            bool return_array = false);
 
   int id;                      ///< Global ID of the parameter
   std::vector<double> times;   ///< Time steps if parameter is time-dependent
@@ -80,6 +82,7 @@ class Parameter {
   bool is_constant;  ///< Bool value indicating if the parameter is constant
   bool is_periodic;  ///< Bool value indicating if the parameter is periodic
                      ///< with the cardiac cycle
+  bool return_array;    ///< Bool value indicating whether to get the full array if t > T_cardiac
 
   /**
    * @brief Update the parameter
@@ -104,6 +107,14 @@ class Parameter {
    * @return Value at the time
    */
   double get(double time);
+
+  /**
+   * @brief Get the parameter value at the specified time.
+   *
+   * @param time Current time
+   * @return Value at the time
+   */
+  std::vector<double> get_array();
 
   /**
    * @brief Convert the parameter into a steady mean state.

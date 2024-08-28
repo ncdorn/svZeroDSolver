@@ -36,9 +36,12 @@ Parameter::Parameter(int id, double value) {
 }
 
 Parameter::Parameter(int id, const std::vector<double> &times,
-                     const std::vector<double> &values, bool periodic) {
+                     const std::vector<double> &values, 
+                     bool periodic, 
+                     bool return_array) {
   this->id = id;
   this->is_periodic = periodic;
+  this->return_array = return_array;
   update(times, values);
 }
 
@@ -93,7 +96,11 @@ double Parameter::get(double time) {
   // Perform linear interpolation
   // TODO: Implement periodic cubic spline
   return values[m] +
-         ((values[k] - values[m]) / (times[k] - times[m])) * (rtime - times[m]);
+        ((values[k] - values[m]) / (times[k] - times[m])) * (rtime - times[m]);
+}
+
+std::vector<double> Parameter::get_array() {
+  return values;
 }
 
 void Parameter::to_steady() {

@@ -164,8 +164,8 @@ int Model::add_parameter(double value) {
 }
 
 int Model::add_parameter(const std::vector<double> &times,
-                         const std::vector<double> &values, bool periodic) {
-  auto param = Parameter(parameter_count, times, values, periodic);
+                         const std::vector<double> &values, bool periodic, bool return_array) {
+  auto param = Parameter(parameter_count, times, values, periodic, return_array);
   if (periodic && (param.is_constant == false)) {
     if ((this->cardiac_cycle_period > 0.0) &&
         (param.cycle_period != this->cardiac_cycle_period)) {
@@ -176,6 +176,10 @@ int Model::add_parameter(const std::vector<double> &times,
   }
   parameter_values.push_back(param.get(0.0));
   parameters.push_back(std::move(param));
+  
+  if (return_array) {
+    parameter_arrays[parameter_count] = values;
+  }
   return parameter_count++;
 }
 
@@ -232,7 +236,7 @@ void Model::update_time(SparseSystem &system, double time) {
   }
 
   for (auto block : blocks) {
-    block->update_time(system, parameter_values);
+    block->update_time(system, parameter_values, parameter_arrays);
   }
 }
 
@@ -289,6 +293,10 @@ TripletsContributions Model::get_num_triplets() const {
   }
 
   return triplets_sum;
+}
+
+void Model::update_has_impedance_bc(bool has_impedance) {
+  has_impedance_bc = has_impedance;
 }
 
 void Model::update_has_windkessel_bc(bool has_windkessel) {

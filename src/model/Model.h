@@ -204,7 +204,7 @@ class Model {
    * @return int Global ID of the parameter
    */
   int add_parameter(const std::vector<double> &times,
-                    const std::vector<double> &values, bool periodic = true);
+                    const std::vector<double> &values, bool periodic = true, bool return_array = false);
 
   /**
    * @brief Get a parameter by its global ID
@@ -316,6 +316,14 @@ class Model {
   void update_has_windkessel_bc(bool has_windkessel);
 
   /**
+   * @brief Specify if model has at least one impedance boundary condition
+   *
+   * @param has_windkessel Toggle if model has at least one impedance boundary condition
+   * condition
+   */
+  void update_has_impedance_bc(bool has_impedance);
+
+  /**
    * @brief Update model with largest time constant among all Windkessel
    * boundary conditions present in model
    *
@@ -365,9 +373,16 @@ class Model {
                          ///< to blocks to set up the linear system in
                          ///< `update_constant`, `update_time` and
                          ///< `update_solution`.
+  
+  std::map<int, std::vector<double>>
+      parameter_arrays;  ///< Arrays of time-dependent parameters. This is used
+                         ///< to store the time-dependent values of the parameters
+                         ///< and is used to get the full array if t > T_cardiac
 
   bool has_windkessel_bc = false;
   double largest_windkessel_time_constant = 0.0;
+
+  bool has_impedance_bc = false;
 };
 
 #endif  // SVZERODSOLVER_MODEL_MODEL_HPP_

@@ -75,7 +75,8 @@ void Block::setup_model_dependent_params() {}
 void Block::update_constant(SparseSystem &system,
                             std::vector<double> &parameters) {}
 
-void Block::update_time(SparseSystem &system, std::vector<double> &parameters) {
+void Block::update_time(SparseSystem &system, std::vector<double> &parameters,
+                           std::map<int, std::vector<double>> &parameter_arrays) {
 }
 
 void Block::update_solution(

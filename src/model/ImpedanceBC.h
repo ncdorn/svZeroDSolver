@@ -90,10 +90,12 @@ class ImpedanceBC : public Block {
    * @param model The model to which the block belongs
    */
   ImpedanceBC(int id, Model *model)
-      : Block(id, model, BlockType::pressure_bc, BlockClass::boundary_condition,
+       : Block(id, model, BlockType::impedance_bc, BlockClass::boundary_condition,
               {{"t", InputParameter(false, true)},
                {"Z", InputParameter(false, true)},
                {"Pd", InputParameter()}}) {}
+  
+  bool return_array = true; // 
 
   /**
    * @brief Set up the degrees of freedom (DOF) of the block
@@ -122,7 +124,7 @@ class ImpedanceBC : public Block {
    * @param system System to update contributions at
    * @param parameters Parameters of the model
    */
-  void update_time(SparseSystem &system, std::vector<double> &parameters);
+  void update_time(SparseSystem &system, std::vector<double> &parameters, std::map<int, std::vector<double>> &parameter_arrays);
 
   /**
    * @brief Update the solution of the element in a sparse system
@@ -166,7 +168,7 @@ class ImpedanceBC : public Block {
    *
    * @param parameters Parameters of the model
    */
-   void convolve_zq(std::vector<double> &parameters, bool &converged);
+   void convolve_zq(std::vector<double> &parameters, std::map<int, std::vector<double>> &parameter_arrays);
 
    /**
    * @brief Print the first five elements of a vector
