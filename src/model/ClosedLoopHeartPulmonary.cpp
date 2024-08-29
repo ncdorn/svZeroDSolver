@@ -104,7 +104,8 @@ void ClosedLoopHeartPulmonary::update_constant(
 }
 
 void ClosedLoopHeartPulmonary::update_time(SparseSystem &system,
-                                           std::vector<double> &parameters) {
+                                           std::vector<double> &parameters, 
+                                           std::map<int, std::vector<double>> &parameter_arrays) {
   get_activation_and_elastance_functions(parameters);
 
   // DOF 0, Eq 0: Right atrium pressure

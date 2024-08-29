@@ -66,7 +66,8 @@ void OpenLoopCoronaryBC::update_constant(SparseSystem &system,
 }
 
 void OpenLoopCoronaryBC::update_time(SparseSystem &system,
-                                     std::vector<double> &parameters) {
+                                     std::vector<double> &parameters, 
+                                     std::map<int, std::vector<double>> &parameter_arrays) {
   auto Ram = parameters[global_param_ids[1]];
   auto Rv = parameters[global_param_ids[2]];
   auto Cim = parameters[global_param_ids[4]];

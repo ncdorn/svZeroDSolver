@@ -54,7 +54,8 @@ void ChamberElastanceInductor::update_constant(
 }
 
 void ChamberElastanceInductor::update_time(SparseSystem &system,
-                                           std::vector<double> &parameters) {
+                                           std::vector<double> &parameters, 
+                                           std::map<int, std::vector<double>> &parameter_arrays) {
   get_elastance_values(parameters);
 
   // Eq 0: P_in - E(t)(Vc - Vrest) = P_in - E(t)*Vc + E(t)*Vrest = 0

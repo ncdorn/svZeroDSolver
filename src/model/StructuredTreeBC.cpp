@@ -43,7 +43,8 @@ void StructuredTreeBC::update_constant(SparseSystem &system,
 }
 
 void StructuredTreeBC::update_time(SparseSystem &system,
-                                      std::vector<double> &parameters) {
+                                      std::vector<double> &parameters, 
+                                      std::map<int, std::vector<double>> &parameter_arrays) {
 
   // eqn 0: P_in - zq_conv = 0
   
