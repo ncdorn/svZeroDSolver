@@ -119,9 +119,12 @@ void ImpedanceBC::convolve_zq(std::vector<double> &parameters, bool &converged) 
     } else {
     std::reverse(q.begin(), q.end()); // reverse the vector
     // int N =  // number of time steps in the period
+    float per = t / T_cardiac;
+    if (per > 1.3 and per < 1.5) {
     printf("q, z with OLD CODE\n");
     printf("q_rev[0]: %f, q_rev[1]: %f, q_rev[2]: %f, q_rev[3]: %f, q_rev[4]: %f \n", q[0], q[1], q[2], q[3], q[4]);
     printf("z[0]: %f, z[1]: %f, z[2]: %f, z[3]: %f, z[4]: %f \n", z[0], z[1], z[2], z[3], z[4]);
+    }
 
     for (int k = 0; k < z.size(); ++k) {
       zq_conv += q[k] * z[k]; // NEED TO GET TIMESTEP AND MULTIPLY BY THIS
@@ -130,6 +133,10 @@ void ImpedanceBC::convolve_zq(std::vector<double> &parameters, bool &converged) 
       // }
     };
     std::reverse(q.begin(), q.end()); // reverse back
+
+    if (per > 1.3 and per < 1.5) {
+    printf("zq_conv for per = %f: %f \n\n", per, zq_conv);
+    }
   };
   // where N = number of time steps in the period
   //       n = current time step
