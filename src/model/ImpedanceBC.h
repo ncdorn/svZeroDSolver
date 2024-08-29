@@ -148,11 +148,6 @@ class ImpedanceBC : public Block {
    */
   TripletsContributions num_triplets{1, 0, 0};
 
-  /**
-   * @brief Setup parameters that depend on the model
-   *
-   */
-  void setup_model_dependent_params();
 
  private:
    double zq_conv; // z and q convolved over the previous period
@@ -160,6 +155,10 @@ class ImpedanceBC : public Block {
    int num_timesteps; // number of timesteps in the period
    std::vector<double> z; // impedance at each timestep
    std::vector<double> q; // flow at each timestep
+   std::vector<double> times_1per; // vector of times for debugging
+   std::vector<double> times_2per; // vector of times for debugging
+   std::vector<double> z_times;
+   std::vector<double> z_interp;
 
 
 
@@ -167,6 +166,7 @@ class ImpedanceBC : public Block {
    * @brief get the convolution of z and q
    *
    * @param parameters Parameters of the model
+   * @param parameter_arrays Arrays of time-dependent model parameters
    */
    void convolve_zq(std::vector<double> &parameters, std::map<int, std::vector<double>> &parameter_arrays);
 
@@ -176,6 +176,13 @@ class ImpedanceBC : public Block {
    * @param vec Vector to print
    */
    void printfive(std::vector<double> &vec);
+
+   /**
+    * @brief Interpolate the impedance based on the actual simulation timesteps
+    * 
+    * @param parameter_arrays Parameters of the model
+    */
+   void interpolate_zq(std::map<int, std::vector<double>> &parameter_arrays);
 
 };
 
