@@ -67,27 +67,19 @@ void ImpedanceBC::update_solution(
       // printf("updating solution, converged \n");
       q.erase(q.begin()); // remove the first element in the q array (oldest value)
       // printf("size of q: %d, size of z: %d \n", q.size(), z.size());
-      printfive(z);
     } else {
       // q.pop_back(); // remove the most recent value in the q array
     };
   
   }
-  // printf("size of q: %d, size of z: %d \n", q.size(), z.size());
-    
+
   }
 
-
-void ImpedanceBC::setup_model_dependent_params() {
-  z_0 = model->get_parameter_value(global_param_ids[0]); // I do not think we need this!
-  // num_timesteps = model->sim
-}
 
 void ImpedanceBC::convolve_zq(std::vector<double> &parameters, bool &converged) {
   
   auto T_cardiac = model->cardiac_cycle_period;
   auto t = model->time;
-  auto dt = 
 
   // if t < T_per, zq_conv = 0
   zq_conv = 0.0;
