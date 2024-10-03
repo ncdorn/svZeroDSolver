@@ -93,7 +93,9 @@ class ImpedanceBC : public Block {
        : Block(id, model, BlockType::impedance_bc, BlockClass::boundary_condition,
               {{"t", InputParameter(false, true)},
                {"Z", InputParameter(false, true)},
-               {"Pd", InputParameter()}}) {}
+               {"Pd", InputParameter()}
+               // {"Q", InputParameter(false, true)}
+               }) {}
   
   bool return_array = true; // 
 
@@ -123,6 +125,7 @@ class ImpedanceBC : public Block {
    *
    * @param system System to update contributions at
    * @param parameters Parameters of the model
+   * @param parameter_arrays Arrays of time-dependent model parameters (only used for impedance_bc curerently)
    */
   void update_time(SparseSystem &system, std::vector<double> &parameters, std::map<int, std::vector<double>> &parameter_arrays);
 
@@ -159,6 +162,7 @@ class ImpedanceBC : public Block {
    std::vector<double> times_2per; // vector of times for debugging
    std::vector<double> z_times;
    std::vector<double> z_interp;
+   std::vector<double> zq_conv_vec;
 
 
 
@@ -175,7 +179,7 @@ class ImpedanceBC : public Block {
    * 
    * @param vec Vector to print
    */
-   void printfive(std::vector<double> &vec);
+   void printvec(std::vector<double> &vec, std::string name, int n);
 
    /**
     * @brief Interpolate the impedance based on the actual simulation timesteps
@@ -183,6 +187,14 @@ class ImpedanceBC : public Block {
     * @param parameter_arrays Parameters of the model
     */
    void interpolate_zq(std::map<int, std::vector<double>> &parameter_arrays);
+
+   /**
+    * @brief Write a value to a file
+    * 
+    * @param value Value to write
+    * @param filename Name of the file to write to
+    */
+   void writevalue(double &value, std::string filename);
 
 };
 

@@ -31,6 +31,10 @@
 #include "ImpedanceBC.h"
 #include "Model.h"
 
+// for debugging
+#include <iostream>
+#include <fstream>
+
 void ImpedanceBC::setup_dofs(DOFHandler &dofhandler) {
   Block::setup_dofs_(dofhandler, 1, {});
 }
@@ -45,6 +49,7 @@ void ImpedanceBC::update_constant(SparseSystem &system,
 void ImpedanceBC::update_time(SparseSystem &system,
                                       std::vector<double> &parameters,
                                       std::map<int, std::vector<double>> &parameter_arrays) {
+  
   convolve_zq(parameters, parameter_arrays);
   if (model->time <= model->cardiac_cycle_period) {
     times_1per.push_back(model->time);
@@ -79,12 +84,14 @@ void ImpedanceBC::update_solution(
     bool &converged) {
   
   q.push_back(y[global_var_ids[1]]); // add the new value to the q array
+  // zq_conv_vec.push_back(zq_conv);
 
   system.C(global_eqn_ids[0]) = -zq_conv - parameters[global_param_ids[1]];
 
   if (!converged) {
     // printf("solution not converged for q = %f\n", y[global_var_ids[1]]);
     q.pop_back(); // remove the most recent value in the q array
+    // zq_conv_vec.pop_back();
   }
   else {
     // printf("solution converged for q = %f\n", y[global_var_ids[1]]);
@@ -94,8 +101,12 @@ void ImpedanceBC::update_solution(
     if (converged) {
       q.erase(q.begin()); // remove the first element in the q array (oldest value)
       // printfive(q);
+      // zq_conv_vec.erase(zq_conv_vec.begin());
+      std::string zqfile = "zq_conv.txt";
+      writevalue(zq_conv, zqfile);
     } else {
       // q.pop_back(); // remove the most recent value in the q array
+
     };
   
   }
@@ -132,6 +143,7 @@ void ImpedanceBC::convolve_zq(std::vector<double> &parameters, std::map<int, std
     //   printf("k: %d, q[k]: %f, z[k]: %f, zq_conv: %f\n", k, q[k], z[k], zq_conv);
     // }
   };
+
   std::reverse(q.begin(), q.end()); // reverse back
 
   // where N = number of time steps in the period
@@ -162,12 +174,17 @@ void ImpedanceBC::interpolate_zq(std::map<int, std::vector<double>> &parameter_a
   
 }
 
-void ImpedanceBC::printfive(std::vector<double> &vec) {
-  printf("z_interp[0:5] = [");
-  for (int i = 0; i < 5; ++i) {
-    printf("%f,", vec[i]);
+void ImpedanceBC::printvec(std::vector<double> &vec, std::string name, int n) {
+
+  if (n > vec.size()) {
+    n = vec.size();
   }
-  printf("]\n");
+
+  std::cout << name << "[0:" << n << "] = [";
+  for (int i = vec.size() - n; i < vec.size(); ++i) {
+    printf("%f ", vec[i]);
+  }
+  std::cout << "]" << std::endl;
 
   // printf("for z of len %d, z[:10] = [", z.size());
   // int len = z.size();
@@ -181,4 +198,11 @@ void ImpedanceBC::printfive(std::vector<double> &vec) {
   //   // printf("z(t = 0) is in this array! at index %d \n", i);
   //   }
   // };
+}
+
+void ImpedanceBC::writevalue(double &value, std::string filename) {
+  std::ofstream file;
+  file.open(filename, std::ios::app);
+  file << value << std::endl;
+  file.close();
 }
