@@ -35,7 +35,8 @@ void BloodVessel::setup_dofs(DOFHandler &dofhandler) {
 }
 
 void BloodVessel::update_constant(SparseSystem &system,
-                                  std::vector<double> &parameters) {
+                                  std::vector<double> &parameters,
+                                  std::map<int, std::vector<double>> &parameter_arrays) {
   // Get parameters
   double capacitance = parameters[global_param_ids[ParamId::CAPACITANCE]];
   double inductance = parameters[global_param_ids[ParamId::INDUCTANCE]];
@@ -59,6 +60,7 @@ void BloodVessel::update_constant(SparseSystem &system,
 
 void BloodVessel::update_solution(
     SparseSystem &system, std::vector<double> &parameters,
+    std::map<int, std::vector<double>> &parameter_arrays,
     const Eigen::Matrix<double, Eigen::Dynamic, 1> &y,
     const Eigen::Matrix<double, Eigen::Dynamic, 1> &dy) {
   // Get parameters

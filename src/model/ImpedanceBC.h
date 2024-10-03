@@ -115,7 +115,7 @@ class ImpedanceBC : public Block {
    * @param system System to update contributions at
    * @param parameters Parameters of the model
    */
-  void update_constant(SparseSystem &system, std::vector<double> &parameters);
+  void update_constant(SparseSystem &system, std::vector<double> &parameters, std::map<int, std::vector<double>> &parameter_arrays);
 
   /**
    * @brief Update the time-dependent contributions of the element in a sparse
@@ -136,6 +136,7 @@ class ImpedanceBC : public Block {
    */
   void update_solution(
       SparseSystem &system, std::vector<double> &parameters,
+      std::map<int, std::vector<double>> &parameter_arrays,
       const Eigen::Matrix<double, Eigen::Dynamic, 1> &y,
       const Eigen::Matrix<double, Eigen::Dynamic, 1> &dy,
       bool &converged);
@@ -156,9 +157,10 @@ class ImpedanceBC : public Block {
    std::vector<double> z; // impedance at each timestep
    std::vector<double> q; // flow at each timestep
    std::vector<double> times_1per; // vector of times for debugging
-   std::vector<double> times_2per; // vector of times for debugging
-   std::vector<double> z_times;
+   // std::vector<double> times_2per; // vector of times for debugging
    std::vector<double> z_interp;
+   std::vector<double> times; // vector of times for debugging
+   std::vector<double> zq_conv_vec;
 
 
 
@@ -175,14 +177,22 @@ class ImpedanceBC : public Block {
    * 
    * @param vec Vector to print
    */
-   void printfive(std::vector<double> &vec);
+   void printvec(std::vector<double> &vec, std::string name, int n);
 
    /**
     * @brief Interpolate the impedance based on the actual simulation timesteps
     * 
     * @param parameter_arrays Parameters of the model
     */
-   void interpolate_zq(std::map<int, std::vector<double>> &parameter_arrays);
+   void interpolate_zq(double time, std::map<int, std::vector<double>> &parameter_arrays);
+   
+   /**
+    *     * @brief Write a value to a file
+    *         * 
+    *             * @param value Value to write
+    *                 * @param filename Name of the file to write to
+    *                     */
+   void writevalue(double &value, std::string filename);
 
 };
 

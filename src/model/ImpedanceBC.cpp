@@ -31,12 +31,16 @@
 #include "ImpedanceBC.h"
 #include "Model.h"
 
+// for debugging
+#include <iostream>
+#include <fstream>
 void ImpedanceBC::setup_dofs(DOFHandler &dofhandler) {
   Block::setup_dofs_(dofhandler, 1, {});
 }
 
 void ImpedanceBC::update_constant(SparseSystem &system,
-                                          std::vector<double> &parameters) {
+                                  std::vector<double> &parameters,
+                                  std::map<int, std::vector<double>> &parameter_arrays) {
   // eqn 0: P_in - zq_conv - P_d = 0
   system.F.coeffRef(global_eqn_ids[0], global_var_ids[0]) = 1.0;
   // system.F.coeffRef(global_eqn_ids[0], global_var_ids[1]) = z_0;
@@ -45,7 +49,7 @@ void ImpedanceBC::update_constant(SparseSystem &system,
 void ImpedanceBC::update_time(SparseSystem &system,
                                       std::vector<double> &parameters,
                                       std::map<int, std::vector<double>> &parameter_arrays) {
-  convolve_zq(parameters, parameter_arrays);
+  
   if (model->time <= model->cardiac_cycle_period) {
     times_1per.push_back(model->time);
   }
@@ -66,28 +70,57 @@ void ImpedanceBC::update_time(SparseSystem &system,
   // }
   // printf("\n");
 
-  if (model->time > model->cardiac_cycle_period) {
-    interpolate_zq(parameter_arrays);
-  }
-
 }
 
 void ImpedanceBC::update_solution(
     SparseSystem &system, std::vector<double> &parameters,
+    std::map<int, std::vector<double>> &parameter_arrays,
     const Eigen::Matrix<double, Eigen::Dynamic, 1> &y,
     const Eigen::Matrix<double, Eigen::Dynamic, 1> &dy,
     bool &converged) {
-  
+
+  // we need to make sure the simulation is unique for each timestep
+
   q.push_back(y[global_var_ids[1]]); // add the new value to the q array
 
+  convolve_zq(parameters, parameter_arrays);
+  zq_conv_vec.push_back(zq_conv);
+
+  if (times.size() == 0) {
+    times.push_back(0.0);
+  } else {
+    if (model->time > times.back()) {
+      // std::cout << "we are on a new timestep!" << std::endl;
+      times.push_back(model->time);
+    }
+  }
+
+  if (q.size() > times.size()) {
+    // each q needs to be unique for each t
+    if (q.size() >= 2) {  // Ensure the vector has at least two elements
+        q.erase(q.end() - 2);  // Erase the second-to-last element
+        zq_conv_vec.erase(zq_conv_vec.end() - 2);
+    }
+    // q.pop_back();
+  }
+
   system.C(global_eqn_ids[0]) = -zq_conv - parameters[global_param_ids[1]];
+
 
   if (!converged) {
     // printf("solution not converged for q = %f\n", y[global_var_ids[1]]);
     q.pop_back(); // remove the most recent value in the q array
+    zq_conv_vec.pop_back();
   }
   else {
     // printf("solution converged for q = %f\n", y[global_var_ids[1]]);
+   std::string zqfile = "zq_conv.txt";
+   writevalue(zq_conv_vec.back(), zqfile);
+   std::string qfile = "q.txt";
+   writevalue(q.back(), qfile);
+   std::string tfile = "times.txt";
+   double t = model->time;
+   writevalue(t, tfile);
   }
 
   if (model->time > model->cardiac_cycle_period) {
@@ -97,7 +130,6 @@ void ImpedanceBC::update_solution(
     } else {
       // q.pop_back(); // remove the most recent value in the q array
     };
-  
   }
     
   }
@@ -105,9 +137,29 @@ void ImpedanceBC::update_solution(
 void ImpedanceBC::convolve_zq(std::vector<double> &parameters, std::map<int, std::vector<double>> &parameter_arrays) {
   
   auto T_cardiac = model->cardiac_cycle_period;
-  auto t = model->time;
+  double t = model->time;
+  double tstep = times.rbegin()[0] - times.rbegin()[1];
+
+  // std::cout << "convolving z and q for t = " << t << std::endl;
   
   std::vector<double> z = parameter_arrays[global_param_ids[0]];
+
+  if (t <= model->cardiac_cycle_period) {
+    if (z_interp.size() < times.size()) {
+      if (z_interp.size() == 0) {
+        z_interp.push_back(parameter_arrays[global_param_ids[0]][0]);
+
+      } else {
+        interpolate_zq(t, parameter_arrays);
+      }
+    }
+  }
+  // print out z and q
+  std::string imp = "impedance interpolated";
+//  printvec(z_interp, imp, z_interp.size());
+  std::string q_name = "Q";
+//  printvec(q, q_name, q.size());
+//  printvec(times, t_name, times.size());
 
   // printf("size of z: %d | size of q: %d\n", z.size(), q.size());
 
@@ -123,11 +175,12 @@ void ImpedanceBC::convolve_zq(std::vector<double> &parameters, std::map<int, std
 
   float per = t / T_cardiac;
 
-
+  std::cout << "z_interp size: " << z_interp.size() << std::endl;
+  std::cout << "q size: " << q.size() << std::endl;
   zq_conv = 0;
 
-  for (int k = 0; k < z.size(); ++k) {
-    zq_conv += q[k] * z[k]; // NEED TO GET TIMESTEP AND MULTIPLY BY THIS
+  for (int k = 0; k < z_interp.size(); ++k) {
+    zq_conv += q[k] * z_interp[k]; // NEED TO GET TIMESTEP AND MULTIPLY BY THIS
     // if (k % 100 == 0) {
     //   printf("k: %d, q[k]: %f, z[k]: %f, zq_conv: %f\n", k, q[k], z[k], zq_conv);
     // }
@@ -140,34 +193,33 @@ void ImpedanceBC::convolve_zq(std::vector<double> &parameters, std::map<int, std
 
 }
 
-void ImpedanceBC::interpolate_zq(std::map<int, std::vector<double>> &parameter_arrays) {
+void ImpedanceBC::interpolate_zq(double time, std::map<int, std::vector<double>> &parameter_arrays) {
 
   double T_cardiac = model->cardiac_cycle_period;
-  double t = model->time;
 
   std::vector<double> z = parameter_arrays[global_param_ids[0]];
 
-  double tstep_size = T_cardiac / z.size();
+  int tstep = floor(time / T_cardiac * z.size());
 
+  // get the next and previous timesteps for interpolation
+  // double tstep_size = 1 / z.size() * T_cardiac
+  double t_last = tstep / (double)z.size() * T_cardiac;
+  double t_next = (tstep + 1) / (double)z.size() * T_cardiac;
 
-  for (int i = 0; i < z.size(); ++i) {
-    double t = i * tstep_size;
-
-    z_times.push_back(t);
-  }
-
-  for (int i = 0; i < z.size(); ++i) {
-    z_interp.push_back(z[i] + (z[i+1] - z[i]) * (times_1per[i] - z_times[i]) / (z_times[i+1] - z_times[i]));
-  }
+  z_interp.push_back(z[tstep] + (z[tstep+1] - z[tstep]) * (time - t_last) / (t_next - t_last));
   
 }
 
-void ImpedanceBC::printfive(std::vector<double> &vec) {
-  printf("z_interp[0:5] = [");
-  for (int i = 0; i < 5; ++i) {
-    printf("%f,", vec[i]);
+void ImpedanceBC::printvec(std::vector<double> &vec, std::string name, int n) {
+
+  if (n > vec.size()) {
+    n = vec.size();
   }
-  printf("]\n");
+  std::cout << name << "[0:" << n << "] = [";
+  for (int i = vec.size() - n; i < vec.size(); ++i) {
+    printf("%f ", vec[i]);
+  }
+  std::cout << "]" << std::endl;
 
   // printf("for z of len %d, z[:10] = [", z.size());
   // int len = z.size();
@@ -181,4 +233,11 @@ void ImpedanceBC::printfive(std::vector<double> &vec) {
   //   // printf("z(t = 0) is in this array! at index %d \n", i);
   //   }
   // };
+}
+
+void ImpedanceBC::writevalue(double &value, std::string filename) {
+  std::ofstream file;
+  file.open(filename, std::ios::app);
+  file << value << std::endl;
+  file.close();
 }

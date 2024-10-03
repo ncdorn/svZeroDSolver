@@ -234,7 +234,8 @@ class Block {
    * @param parameters Parameters of the model
    */
   virtual void update_constant(SparseSystem &system,
-                               std::vector<double> &parameters);
+                               std::vector<double> &parameters, 
+                               std::map<int, std::vector<double>> &parameter_arrays);
   /**
    * @brief Update the time-dependent contributions of the element in a sparse
    * system
@@ -259,6 +260,7 @@ class Block {
    */
   virtual void update_solution(
       SparseSystem &system, std::vector<double> &parameters,
+      std::map<int, std::vector<double>> &parameter_arrays,
       const Eigen::Matrix<double, Eigen::Dynamic, 1> &y,
       const Eigen::Matrix<double, Eigen::Dynamic, 1> &dy,
       bool &converged);

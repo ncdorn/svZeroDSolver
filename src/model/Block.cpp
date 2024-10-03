@@ -73,7 +73,8 @@ void Block::setup_dofs(DOFHandler &dofhandler) {}
 void Block::setup_model_dependent_params() {}
 
 void Block::update_constant(SparseSystem &system,
-                            std::vector<double> &parameters) {}
+                            std::vector<double> &parameters, 
+                            std::map<int, std::vector<double>> &parameter_arrays) {}
 
 void Block::update_time(SparseSystem &system, 
                         std::vector<double> &parameters, 
@@ -82,6 +83,7 @@ void Block::update_time(SparseSystem &system,
 
 void Block::update_solution(
     SparseSystem &system, std::vector<double> &parameters,
+    std::map<int, std::vector<double>> &parameter_arrays,
     const Eigen::Matrix<double, Eigen::Dynamic, 1> &y,
     const Eigen::Matrix<double, Eigen::Dynamic, 1> &dy,
     bool &converged) {}

@@ -224,7 +224,7 @@ int Model::get_num_blocks(bool internal) const {
 
 void Model::update_constant(SparseSystem &system) {
   for (auto block : blocks) {
-    block->update_constant(system, parameter_values);
+    block->update_constant(system, parameter_values, parameter_arrays);
   }
 }
 
@@ -245,7 +245,7 @@ void Model::update_solution(SparseSystem &system,
                             Eigen::Matrix<double, Eigen::Dynamic, 1> &dy,
                             bool &converged) {
   for (auto block : blocks) {
-    block->update_solution(system, parameter_values, y, dy, converged);
+    block->update_solution(system, parameter_values, parameter_arrays, y, dy, converged);
   }
 }
 

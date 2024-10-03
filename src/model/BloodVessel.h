@@ -189,7 +189,7 @@ class BloodVessel : public Block {
    * @param system System to update contributions at
    * @param parameters Parameters of the model
    */
-  void update_constant(SparseSystem &system, std::vector<double> &parameters);
+  void update_constant(SparseSystem &system, std::vector<double> &parameters, std::map<int, std::vector<double>> &parameter_arrays);
 
   /**
    * @brief Update the solution-dependent contributions of the element in a
@@ -201,6 +201,7 @@ class BloodVessel : public Block {
    * @param dy Current derivate of the solution
    */
   void update_solution(SparseSystem &system, std::vector<double> &parameters,
+                       std::map<int, std::vector<double>> &parameter_arrays,
                        const Eigen::Matrix<double, Eigen::Dynamic, 1> &y,
                        const Eigen::Matrix<double, Eigen::Dynamic, 1> &dy);
 

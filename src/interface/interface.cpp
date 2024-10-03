@@ -257,6 +257,12 @@ void update_block_params(int problem_id, std::string block_name,
   // (PRESSUREBC and FLOWBC)
   // TODO: Does this need to be done for OPENLOOPCORONARYBC and RESISTANCEBC
   // too?
+  std::string impedance_str = "impedance";
+  if (block_name == impedance_str) {
+    for (int i = 0; i < params.size(); i++) {
+      // std::cout << "params[" << i << "] for block " << block_name << ": " << params[i] << std::endl;
+    }
+  }
   if ((block_type == BlockType::pressure_bc) ||
       (block_type == BlockType::flow_bc)) {
     std::vector<double> times_new;
