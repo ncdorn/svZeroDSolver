@@ -114,11 +114,11 @@ void ImpedanceBC::update_solution(
   }
   else {
     // printf("solution converged for q = %f\n", y[global_var_ids[1]]);
-   std::string zqfile = "zq_conv.txt";
+   std::string zqfile = "debug/zq_conv.txt";
    writevalue(zq_conv_vec.back(), zqfile);
-   std::string qfile = "q.txt";
+   std::string qfile = "debug/q.txt";
    writevalue(q.back(), qfile);
-   std::string tfile = "times.txt";
+   std::string tfile = "debug/times.txt";
    double t = model->time;
    writevalue(t, tfile);
   }
@@ -169,7 +169,10 @@ void ImpedanceBC::convolve_zq(std::vector<double> &parameters, std::map<int, std
   if (t < T_cardiac) {
     zq_conv = parameters[global_param_ids[0]];
 
-    std::cout << "system[C] " << -zq_conv - parameters[global_param_ids[1]] << std::endl;
+    double system_c = -zq_conv - parameters[global_param_ids[1]];
+
+    std::string debugcfile = "debug/system_c.txt";
+    writevalue(system_c, debugcfile);
 
     // std::cout << "global_param_ids[0]" << parameters[global_param_ids[0]] << std::endl;
     // std::cout << "global_param_ids[1]" << parameters[global_param_ids[1]] << std::endl;
