@@ -176,8 +176,8 @@ void ImpedanceBC::convolve_zq(std::vector<double> &parameters, std::map<int, std
 
   float per = t / T_cardiac;
 
-  std::cout << "z_interp size: " << z_interp.size() << std::endl;
-  std::cout << "q size: " << q.size() << std::endl;
+  // std::cout << "z_interp size: " << z_interp.size() << std::endl;
+  // std::cout << "q size: " << q.size() << std::endl;
   zq_conv = 0;
 
   for (int k = 0; k < z_interp.size(); ++k) {
