@@ -105,6 +105,7 @@ void ImpedanceBC::update_solution(
   }
 
   system.C(global_eqn_ids[0]) = -zq_conv - parameters[global_param_ids[1]];
+  std::cout << "global_param_ids[1]" << parameters[global_param_ids[1]] << std::endl;
 
 
   if (!converged) {
