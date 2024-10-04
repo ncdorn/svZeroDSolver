@@ -105,7 +105,6 @@ void ImpedanceBC::update_solution(
   }
 
   system.C(global_eqn_ids[0]) = -zq_conv - parameters[global_param_ids[1]];
-  std::cout << "global_param_ids[1]" << parameters[global_param_ids[1]] << std::endl;
 
 
   if (!converged) {
@@ -169,7 +168,11 @@ void ImpedanceBC::convolve_zq(std::vector<double> &parameters, std::map<int, std
 
   if (t < T_cardiac) {
     zq_conv = parameters[global_param_ids[0]];
-    std::cout << "global_param_ids[0]" << parameters[global_param_ids[0]] << std::endl;
+
+    std::cout << "system[C] " << -zq_conv - parameters[global_param_ids[1]] << std::endl;
+
+    // std::cout << "global_param_ids[0]" << parameters[global_param_ids[0]] << std::endl;
+    // std::cout << "global_param_ids[1]" << parameters[global_param_ids[1]] << std::endl;
   } else {
   
   std::reverse(q.begin(), q.end()); // reverse the vector
