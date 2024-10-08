@@ -210,6 +210,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a98bac8f1f93e2876efa7a7d59e302569 inherit pub_methods_class_block" id="r_a98bac8f1f93e2876efa7a7d59e302569"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_block.html#a98bac8f1f93e2876efa7a7d59e302569">setup_model_dependent_params</a> ()</td></tr>
 <tr class="memdesc:a98bac8f1f93e2876efa7a7d59e302569 inherit pub_methods_class_block"><td class="mdescLeft">&#160;</td><td class="mdescRight">Setup parameters that depend on the model.  <br /></td></tr>
 <tr class="separator:a98bac8f1f93e2876efa7a7d59e302569 inherit pub_methods_class_block"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3242f9b5c7d9ecb94e80cccfba3b2a0a inherit pub_methods_class_block" id="r_a3242f9b5c7d9ecb94e80cccfba3b2a0a"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_block.html#a3242f9b5c7d9ecb94e80cccfba3b2a0a">setup_initial_state_dependent_params</a> (<a class="el" href="class_state.html">State</a> initial_state, std::vector&lt; double &gt; &amp;parameters)</td></tr>
+<tr class="memdesc:a3242f9b5c7d9ecb94e80cccfba3b2a0a inherit pub_methods_class_block"><td class="mdescLeft">&#160;</td><td class="mdescRight">Setup parameters that depend on the initial state.  <br /></td></tr>
+<tr class="separator:a3242f9b5c7d9ecb94e80cccfba3b2a0a inherit pub_methods_class_block"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a96663232888eeb564e5f37db98fc655f inherit pub_methods_class_block" id="r_a96663232888eeb564e5f37db98fc655f"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_block.html#a96663232888eeb564e5f37db98fc655f">update_gradient</a> (Eigen::SparseMatrix&lt; double &gt; &amp;jacobian, Eigen::Matrix&lt; double, Eigen::Dynamic, 1 &gt; &amp;residual, Eigen::Matrix&lt; double, Eigen::Dynamic, 1 &gt; &amp;alpha, std::vector&lt; double &gt; &amp;y, std::vector&lt; double &gt; &amp;dy)</td></tr>
 <tr class="memdesc:a96663232888eeb564e5f37db98fc655f inherit pub_methods_class_block"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the gradient of the block contributions with respect to the parameters.  <br /></td></tr>
 <tr class="separator:a96663232888eeb564e5f37db98fc655f inherit pub_methods_class_block"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -271,8 +274,7 @@ Public Attributes</h2></td></tr>
 <p>Models the mechanics of the 4 heart chambers and pulmonary circulation</p>
 <p>References: <a class="el" href="citelist.html#CITEREF_sankaran2012patient">[9]</a> and <a class="el" href="citelist.html#CITEREF_menon2023predictors">[5]</a></p>
 <p>TODO: Equations and circuit diagram</p>
-<h3><a class="anchor" id="autotoc_md18"></a>
-Parameters</h3>
+<h3>Parameters</h3>
 <p><a class="el" href="class_parameter.html" title="Model Parameter.">Parameter</a> sequence for constructing this block</p>
 <ul>
 <li><code>0</code> Atrial systole time fraction</li>
@@ -303,8 +305,7 @@ Parameters</h3>
 <li><code>25</code> Right atrium resting volume</li>
 <li><code>26</code> Left atrium resting volume</li>
 </ul>
-<h3><a class="anchor" id="autotoc_md19"></a>
-Internal variables</h3>
+<h3>Internal variables</h3>
 <p>Names of internal variables in this block's output:</p>
 <ul>
 <li><code>V_RA</code>: Right atrium volume</li>

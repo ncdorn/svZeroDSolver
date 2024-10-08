@@ -164,6 +164,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a98bac8f1f93e2876efa7a7d59e302569 inherit pub_methods_class_block" id="r_a98bac8f1f93e2876efa7a7d59e302569"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_block.html#a98bac8f1f93e2876efa7a7d59e302569">setup_model_dependent_params</a> ()</td></tr>
 <tr class="memdesc:a98bac8f1f93e2876efa7a7d59e302569 inherit pub_methods_class_block"><td class="mdescLeft">&#160;</td><td class="mdescRight">Setup parameters that depend on the model.  <br /></td></tr>
 <tr class="separator:a98bac8f1f93e2876efa7a7d59e302569 inherit pub_methods_class_block"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3242f9b5c7d9ecb94e80cccfba3b2a0a inherit pub_methods_class_block" id="r_a3242f9b5c7d9ecb94e80cccfba3b2a0a"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_block.html#a3242f9b5c7d9ecb94e80cccfba3b2a0a">setup_initial_state_dependent_params</a> (<a class="el" href="class_state.html">State</a> initial_state, std::vector&lt; double &gt; &amp;parameters)</td></tr>
+<tr class="memdesc:a3242f9b5c7d9ecb94e80cccfba3b2a0a inherit pub_methods_class_block"><td class="mdescLeft">&#160;</td><td class="mdescRight">Setup parameters that depend on the initial state.  <br /></td></tr>
+<tr class="separator:a3242f9b5c7d9ecb94e80cccfba3b2a0a inherit pub_methods_class_block"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3d48d0c71bf9f5b416f01a6414b0da78 inherit pub_methods_class_block" id="r_a3d48d0c71bf9f5b416f01a6414b0da78"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_block.html#a3d48d0c71bf9f5b416f01a6414b0da78">update_solution</a> (<a class="el" href="class_sparse_system.html">SparseSystem</a> &amp;system, std::vector&lt; double &gt; &amp;parameters, const Eigen::Matrix&lt; double, Eigen::Dynamic, 1 &gt; &amp;y, const Eigen::Matrix&lt; double, Eigen::Dynamic, 1 &gt; &amp;dy)</td></tr>
 <tr class="memdesc:a3d48d0c71bf9f5b416f01a6414b0da78 inherit pub_methods_class_block"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update the solution-dependent contributions of the element in a sparse system.  <br /></td></tr>
 <tr class="separator:a3d48d0c71bf9f5b416f01a6414b0da78 inherit pub_methods_class_block"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -245,8 +248,7 @@ node[ground]{};
 \end{circuitikz}
 \]" src="form_76.png" width="294" height="144"/></picture>
 </p>
-<h3><a class="anchor" id="autotoc_md10"></a>
-Governing equations</h3>
+<h3>Governing equations</h3>
 <p class="formulaDsp">
 <picture><source srcset="form_77_dark.png" media="(prefers-color-scheme: dark)"/><img class="formulaDsp" alt="\[
 P_{in}-E(t)(V_c-V_{rest})=0
@@ -262,8 +264,7 @@ P_{in}-P_{out}-L\dot{Q}_{out}=0
 Q_{in}-Q_{out}-\dot{V}_c=0
 \]" src="form_79.png" width="167" height="23"/></picture>
 </p>
-<h3><a class="anchor" id="autotoc_md11"></a>
-Local contributions</h3>
+<h3>Local contributions</h3>
 <p class="formulaDsp">
 <picture><source srcset="form_80_dark.png" media="(prefers-color-scheme: dark)"/><img class="formulaDsp" alt="\[
 \mathbf{y}^{e}=\left[\begin{array}{lllll}P_{in} &amp; Q_{in} &amp;
@@ -312,8 +313,7 @@ A(t)=-\frac{1}{2}cos(2 \pi T_{contract}/T_{twitch})
 E(t)=(E_{max}-E_{min})A(t) + E_{min}
 \]" src="form_86.png" width="287" height="21"/></picture>
 </p>
-<h3><a class="anchor" id="autotoc_md12"></a>
-Parameters</h3>
+<h3>Parameters</h3>
 <p><a class="el" href="class_parameter.html" title="Model Parameter.">Parameter</a> sequence for constructing this block</p>
 <ul>
 <li><code>0</code> Emax: Maximum elastance</li>
@@ -324,8 +324,7 @@ Parameters</h3>
 <li><code>5</code> t_twitch: Twitch time</li>
 <li><code>6</code> Impedance: Impedance of the outflow</li>
 </ul>
-<h3><a class="anchor" id="autotoc_md13"></a>
-Internal variables</h3>
+<h3>Internal variables</h3>
 <p>Names of internal variables in this block's output:</p>
 <ul>
 <li><code>Vc</code>: Chamber volume </li>

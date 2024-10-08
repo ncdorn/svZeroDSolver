@@ -161,6 +161,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:afc10af316c08e7a78881726e9288b2b0 inherit pub_methods_class_block" id="r_afc10af316c08e7a78881726e9288b2b0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_block.html#afc10af316c08e7a78881726e9288b2b0">setup_dofs_</a> (<a class="el" href="class_d_o_f_handler.html">DOFHandler</a> &amp;dofhandler, int num_equations, const std::list&lt; std::string &gt; &amp;internal_var_names)</td></tr>
 <tr class="memdesc:afc10af316c08e7a78881726e9288b2b0 inherit pub_methods_class_block"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set up the degrees of freedom (DOF) of the block.  <br /></td></tr>
 <tr class="separator:afc10af316c08e7a78881726e9288b2b0 inherit pub_methods_class_block"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3242f9b5c7d9ecb94e80cccfba3b2a0a inherit pub_methods_class_block" id="r_a3242f9b5c7d9ecb94e80cccfba3b2a0a"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_block.html#a3242f9b5c7d9ecb94e80cccfba3b2a0a">setup_initial_state_dependent_params</a> (<a class="el" href="class_state.html">State</a> initial_state, std::vector&lt; double &gt; &amp;parameters)</td></tr>
+<tr class="memdesc:a3242f9b5c7d9ecb94e80cccfba3b2a0a inherit pub_methods_class_block"><td class="mdescLeft">&#160;</td><td class="mdescRight">Setup parameters that depend on the initial state.  <br /></td></tr>
+<tr class="separator:a3242f9b5c7d9ecb94e80cccfba3b2a0a inherit pub_methods_class_block"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a75efe51f152ba4c3f8bab02012ec0dff inherit pub_methods_class_block" id="r_a75efe51f152ba4c3f8bab02012ec0dff"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_block.html#a75efe51f152ba4c3f8bab02012ec0dff">update_time</a> (<a class="el" href="class_sparse_system.html">SparseSystem</a> &amp;system, std::vector&lt; double &gt; &amp;parameters)</td></tr>
 <tr class="memdesc:a75efe51f152ba4c3f8bab02012ec0dff inherit pub_methods_class_block"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update the time-dependent contributions of the element in a sparse system.  <br /></td></tr>
 <tr class="separator:a75efe51f152ba4c3f8bab02012ec0dff inherit pub_methods_class_block"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -251,8 +254,7 @@ node[left]{$P_a$};
 \end{circuitikz}
 \]" src="form_87.png" width="504" height="122"/></picture>
 </p>
-<h3><a class="anchor" id="autotoc_md14"></a>
-Governing equations</h3>
+<h3>Governing equations</h3>
 <p class="formulaDsp">
 <picture><source srcset="form_88_dark.png" media="(prefers-color-scheme: dark)"/><img class="formulaDsp" alt="\[
 P_{out} - P_{in} + (R_{am}+R_a)Q_{in} + R_v Q_{out} + R_{am} C_a
@@ -269,8 +271,7 @@ Q_{in} - Q_{out} + C_a \frac{dP_a}{dt} - C_a \frac{dP_{in}}{dt} + C_a R_a
 C_{im} P_{out} + C_{im} R_v Q_{out} - C_{im} P_{im} - V_{im} = 0
 \]" src="form_90.png" width="358" height="19"/></picture>
 </p>
-<h3><a class="anchor" id="autotoc_md15"></a>
-Local contributions</h3>
+<h3>Local contributions</h3>
 <p class="formulaDsp">
 <picture><source srcset="form_91_dark.png" media="(prefers-color-scheme: dark)"/><img class="formulaDsp" alt="\[
 \mathbf{y}^{e}=\left[\begin{array}{lllll}P_{in} &amp; Q_{in} &amp; P_{out} &amp;
@@ -301,8 +302,7 @@ C_{a}\frac{d P_{a}}{d t} \\
 \end{array}\right] \]" src="form_94.png" width="169" height="71"/></picture>
 </p>
 <p>Assume <picture><source srcset="form_95_dark.png" media="(prefers-color-scheme: dark)"/><img class="formulaInl" alt="$P_a=0$" src="form_95.png" width="54" height="19"/></picture>.</p>
-<h3><a class="anchor" id="autotoc_md16"></a>
-Parameters</h3>
+<h3>Parameters</h3>
 <p><a class="el" href="class_parameter.html" title="Model Parameter.">Parameter</a> sequence for constructing this block</p>
 <ul>
 <li><code>0</code> Ra: Small artery resistance</li>
@@ -311,8 +311,7 @@ Parameters</h3>
 <li><code>3</code> Ca: Small artery capacitance</li>
 <li><code>4</code> Cim: Intramyocardial capacitance</li>
 </ul>
-<h3><a class="anchor" id="autotoc_md17"></a>
-Internal variables</h3>
+<h3>Internal variables</h3>
 <p>Names of internal variables in this block's output:</p>
 <ul>
 <li><code>volume_im</code>: Intramyocardial volume </li>
