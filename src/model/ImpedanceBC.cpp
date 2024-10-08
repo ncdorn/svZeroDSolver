@@ -83,9 +83,6 @@ void ImpedanceBC::update_solution(
 
   q.push_back(y[global_var_ids[1]]); // add the new value to the q array
 
-  convolve_zq(parameters, parameter_arrays);
-  zq_conv_vec.push_back(zq_conv);
-
   if (times.size() == 0) {
     times.push_back(0.0);
   } else {
@@ -103,6 +100,9 @@ void ImpedanceBC::update_solution(
     }
     // q.pop_back();
   }
+
+  convolve_zq(parameters, parameter_arrays);
+  zq_conv_vec.push_back(zq_conv);
 
   system.C(global_eqn_ids[0]) = -zq_conv - parameters[global_param_ids[1]];
 
