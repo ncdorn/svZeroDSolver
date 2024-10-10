@@ -35,7 +35,8 @@ void OpenLoopCoronaryBC::setup_dofs(DOFHandler &dofhandler) {
 }
 
 void OpenLoopCoronaryBC::update_constant(SparseSystem &system,
-                                         std::vector<double> &parameters) {
+                                         std::vector<double> &parameters, 
+                                         std::map<int, std::vector<double>> &parameter_arrays) {
   auto Ra = parameters[global_param_ids[0]];
   auto Ram = parameters[global_param_ids[1]];
   auto Rv = parameters[global_param_ids[2]];

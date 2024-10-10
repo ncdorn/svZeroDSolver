@@ -37,7 +37,8 @@ void ClosedLoopCoronaryBC::setup_dofs(DOFHandler &dofhandler) {
 }
 
 void ClosedLoopCoronaryBC::update_constant(SparseSystem &system,
-                                           std::vector<double> &parameters) {
+                                           std::vector<double> &parameters, 
+                                           std::map<int, std::vector<double>> &parameter_arrays) {
   auto ra = parameters[global_param_ids[ParamId::RA]];
   auto ram = parameters[global_param_ids[ParamId::RAM]];
   auto rv = parameters[global_param_ids[ParamId::RV]];

@@ -35,7 +35,8 @@ void ClosedLoopRCRBC::setup_dofs(DOFHandler &dofhandler) {
 }
 
 void ClosedLoopRCRBC::update_constant(SparseSystem &system,
-                                      std::vector<double> &parameters) {
+                                      std::vector<double> &parameters, 
+                                      std::map<int, std::vector<double>> &parameter_arrays) {
   system.F.coeffRef(global_eqn_ids[0], global_var_ids[1]) = -1.0;
   system.F.coeffRef(global_eqn_ids[0], global_var_ids[3]) = 1.0;
   system.F.coeffRef(global_eqn_ids[1], global_var_ids[0]) = 1.0;

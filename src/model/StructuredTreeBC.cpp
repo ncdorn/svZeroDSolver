@@ -36,7 +36,8 @@ void StructuredTreeBC::setup_dofs(DOFHandler &dofhandler) {
 }
 
 void StructuredTreeBC::update_constant(SparseSystem &system,
-                                          std::vector<double> &parameters) {
+                                          std::vector<double> &parameters, 
+                                          std::map<int, std::vector<double>> &parameter_arrays) {
   // eqn 0: P_in - zq_conv = 0
   system.F.coeffRef(global_eqn_ids[0], global_var_ids[0]) = 1.0;
   // system.F.coeffRef(global_eqn_ids[0], global_var_ids[1]) = z_0;

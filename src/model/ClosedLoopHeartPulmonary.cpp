@@ -39,7 +39,8 @@ void ClosedLoopHeartPulmonary::setup_dofs(DOFHandler &dofhandler) {
 }
 
 void ClosedLoopHeartPulmonary::update_constant(
-    SparseSystem &system, std::vector<double> &parameters) {
+    SparseSystem &system, std::vector<double> &parameters, 
+    std::map<int, std::vector<double>> &parameter_arrays) {
   // DOF 0, Eq 0: Right atrium pressure
   system.F.coeffRef(global_eqn_ids[0], global_var_ids[0]) = 1.0;
 

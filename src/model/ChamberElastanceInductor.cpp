@@ -36,7 +36,7 @@ void ChamberElastanceInductor::setup_dofs(DOFHandler &dofhandler) {
 }
 
 void ChamberElastanceInductor::update_constant(
-    SparseSystem &system, std::vector<double> &parameters) {
+    SparseSystem &system, std::vector<double> &parameters, std::map<int, std::vector<double>> &parameter_arrays) {
   double L = parameters[global_param_ids[ParamId::IMPEDANCE]];
 
   // Eq 0: P_in - E(t)(Vc - Vrest) = 0

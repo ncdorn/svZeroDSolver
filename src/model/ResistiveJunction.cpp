@@ -40,7 +40,8 @@ void ResistiveJunction::setup_dofs(DOFHandler &dofhandler) {
 }
 
 void ResistiveJunction::update_constant(SparseSystem &system,
-                                        std::vector<double> &parameters) {
+                                        std::vector<double> &parameters, 
+                                        std::map<int, std::vector<double>> &parameter_arrays) {
   for (size_t i = 0; i < num_inlets; i++) {
     system.F.coeffRef(global_eqn_ids[i], global_var_ids[i * 2]) = 1.0;
     system.F.coeffRef(global_eqn_ids[i], global_var_ids[i * 2 + 1]) =

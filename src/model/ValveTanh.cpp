@@ -39,7 +39,8 @@ void ValveTanh::setup_dofs(DOFHandler &dofhandler) {
 // update_constant updates matrices E and F from E(y,t)*y_dot + F(y,t)*y +
 // c(y,t) = 0 with terms that DO NOT DEPEND ON THE SOLUTION
 void ValveTanh::update_constant(SparseSystem &system,
-                                std::vector<double> &parameters) {
+                                std::vector<double> &parameters, 
+                                std::map<int, std::vector<double>> &parameter_arrays) {
   // Set element contributions
   // coeffRef args are the indices (i,j) of the matrix
   // global_eqn_ids: number of rows in the matrix, set in setup_dofs

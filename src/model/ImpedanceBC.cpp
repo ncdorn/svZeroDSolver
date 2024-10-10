@@ -113,14 +113,21 @@ void ImpedanceBC::update_solution(
     zq_conv_vec.pop_back();
   }
   else {
+    double time_diff = model->time - model->cardiac_cycle_period;
+
+    if (time_diff > 0 && time_diff < 0.001) {
+      std::cout << time_diff << std::endl;
+      std::string qfile = "debug/q.txt";
+      writearray(q, qfile);
+    }
     // printf("solution converged for q = %f\n", y[global_var_ids[1]]);
-   std::string zqfile = "debug/zq_conv.txt";
-   writevalue(zq_conv_vec.back(), zqfile);
-   std::string qfile = "debug/q.txt";
-   writevalue(q.back(), qfile);
-   std::string tfile = "debug/times.txt";
-   double t = model->time;
-   writevalue(t, tfile);
+  //  std::string zqfile = "debug/zq_conv.txt";
+  //  writevalue(zq_conv_vec.back(), zqfile);
+  //  std::string qfile = "debug/q.txt";
+  //  writevalue(q.back(), qfile);
+  //  std::string tfile = "debug/times.txt";
+  //  double t = model->time;
+  //  writevalue(t, tfile);
   }
 
   if (model->time > model->cardiac_cycle_period) {
@@ -247,5 +254,14 @@ void ImpedanceBC::writevalue(double &value, std::string filename) {
   std::ofstream file;
   file.open(filename, std::ios::app);
   file << value << std::endl;
+  file.close();
+}
+
+void ImpedanceBC::writearray(std::vector<double> &vec, std::string filename) {
+  std::ofstream file;
+  file.open(filename, std::ios::app);
+  for (int i = 0; i < vec.size(); ++i) {
+    file << vec[i] << std::endl;
+  }
   file.close();
 }

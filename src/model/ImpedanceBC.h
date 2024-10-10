@@ -194,6 +194,14 @@ class ImpedanceBC : public Block {
     *                     */
    void writevalue(double &value, std::string filename);
 
+    /**
+      * @brief Write an array to a file
+      * 
+      * @param vec Vector to write
+      * @param filename Name of the file to write to
+      */
+   void writearray(std::vector<double> &vec, std::string filename);
+
 };
 
 #endif  // SVZERODSOLVER_MODEL_IMPEDANCEBC_HPP_

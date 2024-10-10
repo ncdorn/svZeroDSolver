@@ -44,7 +44,8 @@ void BloodVesselJunction::setup_dofs(DOFHandler &dofhandler) {
 }
 
 void BloodVesselJunction::update_constant(SparseSystem &system,
-                                          std::vector<double> &parameters) {
+                                          std::vector<double> &parameters,
+                                          std::map<int, std::vector<double>> &parameter_arrays) {
   // Mass conservation
   system.F.coeffRef(global_eqn_ids[0], global_var_ids[1]) = 1.0;
 
