@@ -119,6 +119,9 @@ void ImpedanceBC::update_solution(
       std::cout << time_diff << std::endl;
       std::string qfile = "debug/q.txt";
       writearray(q, qfile);
+
+      std::string zfile = "debug/z_interp.txt";
+      writearray(z_interp, zfile);
     }
     // printf("solution converged for q = %f\n", y[global_var_ids[1]]);
   //  std::string zqfile = "debug/zq_conv.txt";
