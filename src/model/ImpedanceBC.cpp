@@ -149,7 +149,8 @@ void ImpedanceBC::update_solution(
 
   if (model->time > model->cardiac_cycle_period) {
     if (converged) {
-      q.erase(q.begin()); // remove the first element in the q array (oldest value)
+      // THIS MIGHT BE THE BUG...
+      // q.erase(q.begin()); // remove the first element in the q array (oldest value)
       // printfive(q);
     } else {
       // q.pop_back(); // remove the most recent value in the q array
