@@ -96,13 +96,22 @@ void ImpedanceBC::update_solution(
     // each q needs to be unique for each t
     if (q.size() >= 2) {  // Ensure the vector has at least two elements
         q.erase(q.end() - 2);  // Erase the second-to-last element
-        zq_conv_vec.erase(zq_conv_vec.end() - 2);
     }
     // q.pop_back();
   }
 
   convolve_zq(parameters, parameter_arrays);
   zq_conv_vec.push_back(zq_conv);
+
+  // THIS NEXT SECTION IS FOR DEBUGGING ZQ CONV VEC
+  if (zq_conv_vec.size() > times.size()) {
+    // each q needs to be unique for each t
+    if (zq_conv_vec.size() >= 2) {  // Ensure the vector has at least two elements
+        zq_conv_vec.erase(zq_conv_vec.end() - 2);
+    }
+    // q.pop_back();
+  }
+  
 
   system.C(global_eqn_ids[0]) = -zq_conv - parameters[global_param_ids[1]];
 
@@ -113,15 +122,20 @@ void ImpedanceBC::update_solution(
     zq_conv_vec.pop_back();
   }
   else {
-    double time_diff = model->time - model->cardiac_cycle_period;
+    double time_diff = model->time - (2 * model->cardiac_cycle_period) - 0.5;
 
     if (time_diff > 0 && time_diff < 0.001) {
       std::cout << time_diff << std::endl;
+      std::cout << "time: " << model->time << std::endl;
       std::string qfile = "debug/q.txt";
       writearray(q, qfile);
 
       std::string zfile = "debug/z_interp.txt";
       writearray(z_interp, zfile);
+
+      std::string zqfile = "debug/zq_conv.txt";
+      writearray(zq_conv_vec, zqfile);
+
     }
     // printf("solution converged for q = %f\n", y[global_var_ids[1]]);
   //  std::string zqfile = "debug/zq_conv.txt";
