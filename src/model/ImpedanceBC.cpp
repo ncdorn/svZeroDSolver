@@ -44,6 +44,10 @@ void ImpedanceBC::update_constant(SparseSystem &system,
   // eqn 0: P_in - zq_conv - P_d = 0
   system.F.coeffRef(global_eqn_ids[0], global_var_ids[0]) = 1.0;
   // system.F.coeffRef(global_eqn_ids[0], global_var_ids[1]) = z_0;
+
+
+  /// TESTING OUT ACTUAL DISCRETIZATION? ///
+  system.F.coeffRef(global_eqn_ids[0], global_var_ids[1]) = -parameter_arrays[global_param_ids[0]][0];
 }
 
 void ImpedanceBC::update_time(SparseSystem &system,
@@ -53,22 +57,6 @@ void ImpedanceBC::update_time(SparseSystem &system,
   if (model->time <= model->cardiac_cycle_period) {
     times_1per.push_back(model->time);
   }
-  // else if (model->time < model->cardiac_cycle_period * 2) {
-  //   times_2per.push_back(fmod(model->time, model->cardiac_cycle_period));
-
-  //   printf("times_2per[0:10]: ");
-  //   for (int i = 0; i < 10; i++) {
-  //     printf("%f, ", times_2per[i]);
-  //   }
-  //   printf("\n");
-  //   printf("times_2per.size(): %d\n", times_2per.size());
-  // }
-
-  // printf("times_1per[0:10]: ");
-  // for (int i = 0; i < 10; i++) {
-  //   printf("%f, ", times_1per[i]);
-  // }
-  // printf("\n");
 
 }
 
@@ -101,25 +89,27 @@ void ImpedanceBC::update_solution(
   }
 
   convolve_zq(parameters, parameter_arrays);
-  zq_conv_vec.push_back(zq_conv);
+  // zq_conv_vec.push_back(zq_conv);
 
   // THIS NEXT SECTION IS FOR DEBUGGING ZQ CONV VEC
-  if (zq_conv_vec.size() > times.size()) {
-    // each q needs to be unique for each t
-    if (zq_conv_vec.size() >= 2) {  // Ensure the vector has at least two elements
-        zq_conv_vec.erase(zq_conv_vec.end() - 2);
-    }
-    // q.pop_back();
-  }
+  // if (zq_conv_vec.size() > times.size()) {
+  //   // each q needs to be unique for each t
+  //   if (zq_conv_vec.size() >= 2) {  // Ensure the vector has at least two elements
+  //       zq_conv_vec.erase(zq_conv_vec.end() - 2);
+  //   }
+  //   // q.pop_back();
+  // }
   
 
   system.C(global_eqn_ids[0]) = -zq_conv - parameters[global_param_ids[1]];
+
+  /// TRY TO IMPLEMENT ACTUAL SOLUTION WITH F MATRIX
 
 
   if (!converged) {
     // printf("solution not converged for q = %f\n", y[global_var_ids[1]]);
     q.pop_back(); // remove the most recent value in the q array
-    zq_conv_vec.pop_back();
+    // zq_conv_vec.pop_back();
   }
   else {
     double time_diff = model->time - (2 * model->cardiac_cycle_period) - 0.5;
@@ -137,14 +127,7 @@ void ImpedanceBC::update_solution(
       writearray(zq_conv_vec, zqfile);
 
     }
-    // printf("solution converged for q = %f\n", y[global_var_ids[1]]);
-  //  std::string zqfile = "debug/zq_conv.txt";
-  //  writevalue(zq_conv_vec.back(), zqfile);
-  //  std::string qfile = "debug/q.txt";
-  //  writevalue(q.back(), qfile);
-  //  std::string tfile = "debug/times.txt";
-  //  double t = model->time;
-  //  writevalue(t, tfile);
+
   }
 
   if (model->time > model->cardiac_cycle_period) {
@@ -157,7 +140,7 @@ void ImpedanceBC::update_solution(
     };
   }
     
-  }
+}
 
 void ImpedanceBC::convolve_zq(std::vector<double> &parameters, std::map<int, std::vector<double>> &parameter_arrays) {
   
@@ -180,10 +163,7 @@ void ImpedanceBC::convolve_zq(std::vector<double> &parameters, std::map<int, std
     }
   }
   // print out z and q
-  std::string imp = "impedance interpolated";
-//  printvec(z_interp, imp, z_interp.size());
-  std::string q_name = "Q";
-//  printvec(q, q_name, q.size());
+  
 //  printvec(times, t_name, times.size());
 
   // printf("size of z: %d | size of q: %d\n", z.size(), q.size());
@@ -192,9 +172,10 @@ void ImpedanceBC::convolve_zq(std::vector<double> &parameters, std::map<int, std
   // AND THEN FIGURE OUT HOW TO SAVE THE FLOW RESULT FROM THE 3D SIMULATION TO CONVOLVE STUFF
 
   if (t < T_cardiac) {
-    zq_conv = parameters[global_param_ids[0]];
 
-    double system_c = -zq_conv - parameters[global_param_ids[1]];
+    zq_conv = 0.0;
+
+    double system_c = -parameters[global_param_ids[1]];
 
     std::string debugcfile = "debug/system_c.txt";
     writevalue(system_c, debugcfile);
@@ -202,23 +183,33 @@ void ImpedanceBC::convolve_zq(std::vector<double> &parameters, std::map<int, std
     // std::cout << "global_param_ids[0]" << parameters[global_param_ids[0]] << std::endl;
     // std::cout << "global_param_ids[1]" << parameters[global_param_ids[1]] << std::endl;
   } else {
+
+    std::cout << "convolving z and q for t = " << t << std::endl;
+
+    std::string imp = "impedance interpolated";
+    // printvec(z_interp, imp, z_interp.size());
+    std::string q_name = "Q";
+    // printvec(q, q_name, q.size());
   
-  std::reverse(q.begin(), q.end()); // reverse the vector
-  // int N =  // number of time steps in the period
+    std::reverse(q.begin(), q.end()); // reverse the vector
+    // int N =  // number of time steps in the period
 
-  float per = t / T_cardiac;
+    float per = t / T_cardiac;
 
-  // std::cout << "z_interp size: " << z_interp.size() << std::endl;
-  // std::cout << "q size: " << q.size() << std::endl;
-  zq_conv = 0;
+    // std::cout << "z_interp size: " << z_interp.size() << std::endl;
+    // std::cout << "q size: " << q.size() << std::endl;
+    zq_conv = 0;
 
-  for (int k = 0; k < z_interp.size(); ++k) {
-    zq_conv += q[k] * z_interp[k]; // NEED TO GET TIMESTEP AND MULTIPLY BY THIS
-    // if (k % 100 == 0) {
-    //   printf("k: %d, q[k]: %f, z[k]: %f, zq_conv: %f\n", k, q[k], z[k], zq_conv);
-    // }
-  };
-  std::reverse(q.begin(), q.end()); // reverse back
+    for (int k = 1; k < z_interp.size(); ++k) {
+      zq_conv += q[k] * z_interp[k]; // NEED TO GET TIMESTEP AND MULTIPLY BY THIS
+      // if (k % 100 == 0) {
+      //   printf("k: %d, q[k]: %f, z[k]: %f, zq_conv: %f\n", k, q[k], z[k], zq_conv);
+      // }
+    };
+
+    std::cout << "q_guess: " << q[0] << std::endl;
+
+    std::reverse(q.begin(), q.end()); // reverse back
 
   // where N = number of time steps in the period
   //       n = current time step
@@ -232,12 +223,28 @@ void ImpedanceBC::interpolate_zq(double time, std::map<int, std::vector<double>>
 
   std::vector<double> z = parameter_arrays[global_param_ids[0]];
 
-  int tstep = floor(time / T_cardiac * z.size());
+  int tstep = floor(time / T_cardiac * (z.size() - 1));
+
 
   // get the next and previous timesteps for interpolation
   // double tstep_size = 1 / z.size() * T_cardiac
   double t_last = tstep / (double)z.size() * T_cardiac;
   double t_next = (tstep + 1) / (double)z.size() * T_cardiac;
+
+  double z_interped = z[tstep] + (z[tstep+1] - z[tstep]) * (time - t_last) / (t_next - t_last);
+
+  /////// DEBUGGING ///////
+  if (z_interped != z_interped) {
+    std::cout << "z_interped is nan!" << std::endl;
+    std::cout << "tstep: " << tstep << std::endl;
+    std::cout << "t_last: " << t_last << std::endl;
+    std::cout << "t_next: " << t_next << std::endl;
+    std::cout << "time: " << time << std::endl;
+    std::cout << "z[tstep]: " << z[tstep] << std::endl;
+    std::cout << "z[tstep+1]: " << z[tstep+1] << std::endl;
+    std::cout << "z.size(): " << z.size() << std::endl;
+    std::cout << "T_cardiac: " << T_cardiac << std::endl;
+  }
 
   z_interp.push_back(z[tstep] + (z[tstep+1] - z[tstep]) * (time - t_last) / (t_next - t_last));
   

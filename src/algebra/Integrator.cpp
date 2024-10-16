@@ -109,7 +109,7 @@ State Integrator::step(const State& old_state, double time) {
     if (system.residual.cwiseAbs().maxCoeff() < atol) {
       converged = true;
       model->update_solution(system, y_af, ydot_am, converged);
-      
+
       break; // need to break loop after solution update
     }
 

@@ -143,7 +143,6 @@ int generate_block(Model& model, const nlohmann::json& block_params_json,
         // Add parameters to model
         // if impedance_bc, add array
         if (block->block_type == BlockType::impedance_bc) {
-          printf("Adding impedance_bc parameter\n");
           new_id = model.add_parameter(time, val, periodic, true);
         } else {
           new_id = model.add_parameter(time, val, periodic, false);
@@ -167,6 +166,7 @@ int generate_block(Model& model, const nlohmann::json& block_params_json,
       }
       // Store parameter IDs
       block_param_ids.push_back(new_id);
+      
     }
   }
 
