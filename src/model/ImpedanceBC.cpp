@@ -171,49 +171,48 @@ void ImpedanceBC::convolve_zq(std::vector<double> &parameters, std::map<int, std
   // TODO: PRINT THINGE FROM HERE TO FIGURE OUT HOW TO BEST ACCESS THE PARAMETER ARRAY
   // AND THEN FIGURE OUT HOW TO SAVE THE FLOW RESULT FROM THE 3D SIMULATION TO CONVOLVE STUFF
 
-  if (t < T_cardiac) {
+  // if (t < T_cardiac) {
 
-    zq_conv = 0.0;
+  //   zq_conv = 0.0;
 
-    double system_c = -parameters[global_param_ids[1]];
+  //   double system_c = -parameters[global_param_ids[1]];
 
-    std::string debugcfile = "debug/system_c.txt";
-    writevalue(system_c, debugcfile);
+  //   std::string debugcfile = "debug/system_c.txt";
+  //   writevalue(system_c, debugcfile);
 
-    // std::cout << "global_param_ids[0]" << parameters[global_param_ids[0]] << std::endl;
-    // std::cout << "global_param_ids[1]" << parameters[global_param_ids[1]] << std::endl;
-  } else {
+  //   // std::cout << "global_param_ids[0]" << parameters[global_param_ids[0]] << std::endl;
+  //   // std::cout << "global_param_ids[1]" << parameters[global_param_ids[1]] << std::endl;
+  // } else {
 
-    std::cout << "convolving z and q for t = " << t << std::endl;
+  std::cout << "convolving z and q for t = " << t << std::endl;
 
-    std::string imp = "impedance interpolated";
-    // printvec(z_interp, imp, z_interp.size());
-    std::string q_name = "Q";
-    // printvec(q, q_name, q.size());
-  
-    std::reverse(q.begin(), q.end()); // reverse the vector
-    // int N =  // number of time steps in the period
+  std::string imp = "impedance interpolated";
+  // printvec(z_interp, imp, z_interp.size());
+  std::string q_name = "Q";
+  // printvec(q, q_name, q.size());
 
-    float per = t / T_cardiac;
+  std::reverse(q.begin(), q.end()); // reverse the vector
+  // int N =  // number of time steps in the period
 
-    // std::cout << "z_interp size: " << z_interp.size() << std::endl;
-    // std::cout << "q size: " << q.size() << std::endl;
-    zq_conv = 0;
+  float per = t / T_cardiac;
 
-    for (int k = 1; k < z_interp.size(); ++k) {
-      zq_conv += q[k] * z_interp[k]; // NEED TO GET TIMESTEP AND MULTIPLY BY THIS
-      // if (k % 100 == 0) {
-      //   printf("k: %d, q[k]: %f, z[k]: %f, zq_conv: %f\n", k, q[k], z[k], zq_conv);
-      // }
-    };
+  // std::cout << "z_interp size: " << z_interp.size() << std::endl;
+  // std::cout << "q size: " << q.size() << std::endl;
+  zq_conv = 0;
 
-    std::cout << "q_guess: " << q[0] << std::endl;
+  for (int k = 1; k < z_interp.size(); ++k) {
+    zq_conv += q[k] * z_interp[k]; // NEED TO GET TIMESTEP AND MULTIPLY BY THIS
+    // if (k % 100 == 0) {
+    //   printf("k: %d, q[k]: %f, z[k]: %f, zq_conv: %f\n", k, q[k], z[k], zq_conv);
+    // }
+  };
 
-    std::reverse(q.begin(), q.end()); // reverse back
+  std::cout << "q_guess: " << q[0] << std::endl;
 
-  // where N = number of time steps in the period
-  //       n = current time step
-  }
+  std::reverse(q.begin(), q.end()); // reverse back
+
+
+  // }
 
 }
 
