@@ -45,9 +45,6 @@ void ImpedanceBC::update_constant(SparseSystem &system,
   system.F.coeffRef(global_eqn_ids[0], global_var_ids[0]) = 1.0;
   // system.F.coeffRef(global_eqn_ids[0], global_var_ids[1]) = z_0;
 
-
-  /// TESTING OUT ACTUAL DISCRETIZATION? ///
-  system.F.coeffRef(global_eqn_ids[0], global_var_ids[1]) = -parameter_arrays[global_param_ids[0]][0];
 }
 
 void ImpedanceBC::update_time(SparseSystem &system,
@@ -57,6 +54,12 @@ void ImpedanceBC::update_time(SparseSystem &system,
   if (model->time <= model->cardiac_cycle_period) {
     times_1per.push_back(model->time);
   }
+
+  /// TESTING OUT ACTUAL DISCRETIZATION? ///
+  system.F.coeffRef(global_eqn_ids[0], global_var_ids[1]) = -parameter_arrays[global_param_ids[0]][0];
+  
+
+  system.C(global_eqn_ids[0]) = -zq_conv - parameters[global_param_ids[1]];
 
 }
 
@@ -99,11 +102,6 @@ void ImpedanceBC::update_solution(
   //   }
   //   // q.pop_back();
   // }
-  
-
-  system.C(global_eqn_ids[0]) = -zq_conv - parameters[global_param_ids[1]];
-
-  /// TRY TO IMPLEMENT ACTUAL SOLUTION WITH F MATRIX
 
 
   if (!converged) {
