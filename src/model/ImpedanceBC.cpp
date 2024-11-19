@@ -57,9 +57,9 @@ void ImpedanceBC::update_time(SparseSystem &system,
 
   /// TESTING OUT ACTUAL DISCRETIZATION? ///
   system.F.coeffRef(global_eqn_ids[0], global_var_ids[1]) = -parameter_arrays[global_param_ids[0]][0];
-  
 
   system.C(global_eqn_ids[0]) = -zq_conv - parameters[global_param_ids[1]];
+
 
 }
 
@@ -169,18 +169,18 @@ void ImpedanceBC::convolve_zq(std::vector<double> &parameters, std::map<int, std
   // TODO: PRINT THINGE FROM HERE TO FIGURE OUT HOW TO BEST ACCESS THE PARAMETER ARRAY
   // AND THEN FIGURE OUT HOW TO SAVE THE FLOW RESULT FROM THE 3D SIMULATION TO CONVOLVE STUFF
 
-  // if (t < T_cardiac) {
+  if (t < T_cardiac) {
 
-  //   zq_conv = 0.0;
+    zq_conv = 0.0;
 
-  //   double system_c = -parameters[global_param_ids[1]];
+    double system_c = -parameters[global_param_ids[1]];
 
     // std::string debugcfile = "debug/system_c.txt";
     // writevalue(system_c, debugcfile);
 
-  //   // std::cout << "global_param_ids[0]" << parameters[global_param_ids[0]] << std::endl;
-  //   // std::cout << "global_param_ids[1]" << parameters[global_param_ids[1]] << std::endl;
-  // } else {
+    // std::cout << "global_param_ids[0]" << parameters[global_param_ids[0]] << std::endl;
+    // std::cout << "global_param_ids[1]" << parameters[global_param_ids[1]] << std::endl;
+  } else {
 
 
   std::cout << "convolving z and q for t = " << t << std::endl;
@@ -212,7 +212,7 @@ void ImpedanceBC::convolve_zq(std::vector<double> &parameters, std::map<int, std
   std::reverse(q.begin(), q.end()); // reverse back
 
 
-  // }
+  }
 
 }
 
