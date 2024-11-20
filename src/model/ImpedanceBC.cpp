@@ -169,18 +169,18 @@ void ImpedanceBC::convolve_zq(std::vector<double> &parameters, std::map<int, std
   // TODO: PRINT THINGE FROM HERE TO FIGURE OUT HOW TO BEST ACCESS THE PARAMETER ARRAY
   // AND THEN FIGURE OUT HOW TO SAVE THE FLOW RESULT FROM THE 3D SIMULATION TO CONVOLVE STUFF
 
-  if (t < T_cardiac) {
+  // if (t < T_cardiac) {
 
-    zq_conv = 0.0;
+  //   zq_conv = 0.0;
 
-    double system_c = -parameters[global_param_ids[1]];
+  //   double system_c = -parameters[global_param_ids[1]];
 
-    // std::string debugcfile = "debug/system_c.txt";
-    // writevalue(system_c, debugcfile);
+  //   // std::string debugcfile = "debug/system_c.txt";
+  //   // writevalue(system_c, debugcfile);
 
-    // std::cout << "global_param_ids[0]" << parameters[global_param_ids[0]] << std::endl;
-    // std::cout << "global_param_ids[1]" << parameters[global_param_ids[1]] << std::endl;
-  } else {
+  //   // std::cout << "global_param_ids[0]" << parameters[global_param_ids[0]] << std::endl;
+  //   // std::cout << "global_param_ids[1]" << parameters[global_param_ids[1]] << std::endl;
+  // } else {
 
 
   std::cout << "convolving z and q for t = " << t << std::endl;
@@ -199,20 +199,28 @@ void ImpedanceBC::convolve_zq(std::vector<double> &parameters, std::map<int, std
   // std::cout << "q size: " << q.size() << std::endl;
   zq_conv = 0;
 
-
-  for (int k = 1; k < z_interp.size(); ++k) {
-    zq_conv += q[k] * z_interp[k]; // NEED TO GET TIMESTEP AND MULTIPLY BY THIS
-    // if (k % 100 == 0) {
-    //   printf("k: %d, q[k]: %f, z[k]: %f, zq_conv: %f\n", k, q[k], z[k], zq_conv);
-    // }
-  };
+  if (z_interp.size() < q.size()) {
+    for (int k = 1; k < z_interp.size(); ++k) {
+      zq_conv += q[k] * z_interp[k]; // NEED TO GET TIMESTEP AND MULTIPLY BY THIS
+      // if (k % 100 == 0) {
+      //   printf("k: %d, q[k]: %f, z[k]: %f, zq_conv: %f\n", k, q[k], z[k], zq_conv);
+      // }
+    };
+  } else {
+    for (int k = 1; k < q.size(); ++k) {
+      zq_conv += q[k] * z_interp[k]; // NEED TO GET TIMESTEP AND MULTIPLY BY THIS
+      // if (k % 100 == 0) {
+      //   printf("k: %d, q[k]: %f, z[k]: %f, zq_conv: %f\n", k, q[k], z[k], zq_conv);
+      // }
+    };
+  }
 
   std::cout << "q_guess: " << q[0] << std::endl;
 
   std::reverse(q.begin(), q.end()); // reverse back
 
 
-  }
+  // }
 
 }
 
