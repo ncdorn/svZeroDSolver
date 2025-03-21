@@ -245,6 +245,7 @@ void Model::update_solution(SparseSystem &system,
                             Eigen::Matrix<double, Eigen::Dynamic, 1> &dy,
                             bool &converged) {
   for (auto block : blocks) {
+    
     block->update_solution(system, parameter_values, parameter_arrays, y, dy, converged);
   }
 }

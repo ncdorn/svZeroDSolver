@@ -93,6 +93,7 @@ class ImpedanceBC : public Block {
        : Block(id, model, BlockType::impedance_bc, BlockClass::boundary_condition,
               {{"t", InputParameter(false, true)},
                {"Z", InputParameter(false, true)},
+               {"tree", InputParameter()},
                {"Pd", InputParameter()}}) {}
   
   bool return_array = true; // 

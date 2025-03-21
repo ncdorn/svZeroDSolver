@@ -203,7 +203,8 @@ class BloodVessel : public Block {
   void update_solution(SparseSystem &system, std::vector<double> &parameters,
                        std::map<int, std::vector<double>> &parameter_arrays,
                        const Eigen::Matrix<double, Eigen::Dynamic, 1> &y,
-                       const Eigen::Matrix<double, Eigen::Dynamic, 1> &dy);
+                       const Eigen::Matrix<double, Eigen::Dynamic, 1> &dy,
+                       bool &converged);
 
   /**
    * @brief Set the gradient of the block contributions with respect to the

@@ -183,7 +183,7 @@ void ImpedanceBC::convolve_zq(std::vector<double> &parameters, std::map<int, std
   // } else {
 
 
-  std::cout << "convolving z and q for t = " << t << std::endl;
+  // std::cout << "convolving z and q for tstep = " << tstep << std::endl;
 
   std::string imp = "impedance interpolated";
   // printvec(z_interp, imp, z_interp.size());
@@ -215,7 +215,7 @@ void ImpedanceBC::convolve_zq(std::vector<double> &parameters, std::map<int, std
     };
   }
 
-  std::cout << "q_guess: " << q[0] << std::endl;
+  // std::cout << "q_guess: " << q[0] << std::endl;
 
   std::reverse(q.begin(), q.end()); // reverse back
 

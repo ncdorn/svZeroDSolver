@@ -56,17 +56,19 @@ void BloodVessel::update_constant(SparseSystem &system,
   system.F.coeffRef(global_eqn_ids[0], global_var_ids[2]) = -1.0;
   system.F.coeffRef(global_eqn_ids[1], global_var_ids[1]) = 1.0;
   system.F.coeffRef(global_eqn_ids[1], global_var_ids[3]) = -1.0;
+
+
 }
 
 void BloodVessel::update_solution(
     SparseSystem &system, std::vector<double> &parameters,
     std::map<int, std::vector<double>> &parameter_arrays,
     const Eigen::Matrix<double, Eigen::Dynamic, 1> &y,
-    const Eigen::Matrix<double, Eigen::Dynamic, 1> &dy) {
+    const Eigen::Matrix<double, Eigen::Dynamic, 1> &dy,
+    bool &converged) {
   // Get parameters
   double capacitance = parameters[global_param_ids[ParamId::CAPACITANCE]];
-  double stenosis_coeff =
-      parameters[global_param_ids[ParamId::STENOSIS_COEFFICIENT]];
+  double stenosis_coeff = parameters[global_param_ids[ParamId::STENOSIS_COEFFICIENT]];
   double q_in = y[global_var_ids[1]];
   double dq_in = dy[global_var_ids[1]];
   double stenosis_resistance = stenosis_coeff * fabs(q_in);
