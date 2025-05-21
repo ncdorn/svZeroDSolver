@@ -26,10 +26,6 @@ def test_impedance():
     axs[1, 0].plot(result['flow_out'], result['pressure_out'] / 1333.2, label='Pressure-Flow')
 
 
-    plt.show()
-
-
-
 if __name__ == '__main__':
     test_impedance()
 
