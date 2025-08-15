@@ -58,7 +58,7 @@ void ImpedanceBC::update_time(SparseSystem &system,
   /// TESTING OUT ACTUAL DISCRETIZATION? ///
   system.F.coeffRef(global_eqn_ids[0], global_var_ids[1]) = -parameter_arrays[global_param_ids[0]][0];
 
-  system.C(global_eqn_ids[0]) = -zq_conv - parameters[global_param_ids[1]];
+  system.C(global_eqn_ids[0]) = -zq_conv - parameters[global_param_ids[2]];
 
 
 }
