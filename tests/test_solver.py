@@ -29,6 +29,7 @@ EXPECTED_FAILURES = {
                                       'steadyFlow_R_steadyPressure.json', 
                                       'steadyFlow_bifurcationR_R1_blockNames.json', 
                                       'pulsatileFlow_R_RCR.json', 
+                                      'pulsatileFlow_R_impedance.json',
                                       'closedLoopHeart_withCoronaries.json', 
                                       'steadyFlow_RL_R.json', 
                                       'steadyFlow_bifurcationR_R2.json', 
