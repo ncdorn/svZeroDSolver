@@ -18,3 +18,27 @@ You can find more information under the following links:
 * [**Bug Reports**](https://github.com/simvascular/svZeroDSolver/issues)
 * [**Forum**](https://github.com/simvascular/svZeroDSolver/discussions)
 * [**About SimVascular**](https://simvascular.github.io)
+
+## Impedance BC (Olufsen periodic memory)
+
+`IMPEDANCE` is a boundary condition that enforces
+
+`P = Pd + z0 * Q + sum_{m=1..Nk-1} z[m] * Q_lag[m]`
+
+with one-cycle memory stored in a ring buffer and coupling-safe trial/accept
+semantics.
+
+Required JSON fields in `bc_values`:
+
+* `z`: time-domain impedance kernel array.
+* `period`: kernel period in seconds (must match solver discretization and the
+  model cardiac period, when defined).
+
+Optional fields:
+
+* `Pd`: distal/reference pressure (default `0.0`).
+* `convolution_mode`: `exact` (default) or `truncated`.
+* `num_kernel_terms`: required when `convolution_mode` is `truncated`.
+
+For `exact`, `z.size()` must equal `round(period / dt)`. For `truncated`,
+runtime cost is `O(num_kernel_terms)` per accepted 0D step.

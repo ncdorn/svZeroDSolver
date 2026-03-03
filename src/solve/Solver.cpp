@@ -74,6 +74,7 @@ void Solver::setup_initial() {
     }
 
     this->model->to_unsteady();
+    this->model->clear_persistent_states();
   }
 
   // Use the initial condition (steady or user-provided) to set up parameters

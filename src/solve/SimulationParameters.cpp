@@ -2,6 +2,10 @@
 // University of California, and others. SPDX-License-Identifier: BSD-3-Clause
 #include "SimulationParameters.h"
 
+#include <cmath>
+
+#include "ImpedanceBC.h"
+
 bool get_param_scalar(const nlohmann::json& data, const std::string& name,
                       const InputParameter& param, double& val) {
   if (data.contains(name)) {
@@ -324,6 +328,48 @@ void create_boundary_conditions(Model& model, const nlohmann::json& config,
           model.get_largest_windkessel_time_constant(), time_constant));
     }
 
+    if (block->block_type == BlockType::impedance_bc) {
+      auto* impedance_block = dynamic_cast<ImpedanceBC*>(block);
+      if (impedance_block == nullptr) {
+        throw std::runtime_error(
+            "Internal error: IMPEDANCE block creation failed for " + bc_name +
+            ".");
+      }
+
+      if (!bc_values.contains("z")) {
+        throw std::runtime_error("IMPEDANCE block " + bc_name +
+                                 " is missing required `z` kernel.");
+      }
+      if (!bc_values["z"].is_array()) {
+        throw std::runtime_error("IMPEDANCE block " + bc_name +
+                                 " requires `z` to be an array.");
+      }
+      std::vector<double> z = bc_values["z"].get<std::vector<double>>();
+
+      if (!bc_values.contains("period")) {
+        throw std::runtime_error("IMPEDANCE block " + bc_name +
+                                 " is missing required `period`.");
+      }
+      double period = bc_values["period"];
+      const double period_tol = 1.0e-12;
+      if (model.cardiac_cycle_period > 0.0) {
+        if (std::abs(model.cardiac_cycle_period - period) > period_tol) {
+          throw std::runtime_error(
+              "Inconsistent cardiac cycle period defined in IMPEDANCE block " +
+              bc_name + ".");
+        }
+      } else {
+        model.cardiac_cycle_period = period;
+      }
+
+      double pd = bc_values.value("Pd", 0.0);
+      std::string convolution_mode = bc_values.value("convolution_mode", "exact");
+      int num_kernel_terms = bc_values.value("num_kernel_terms", -1);
+
+      impedance_block->configure(z, period, pd, convolution_mode,
+                                 num_kernel_terms);
+    }
+
     if (block->block_type == BlockType::closed_loop_rcr_bc) {
       if (bc_values["closed_loop_outlet"] == true) {
         closed_loop_bcs.push_back(bc_name);
@@ -387,6 +433,7 @@ void create_external_coupling(
     if (coupling_loc == "inlet") {
       std::vector<std::string> possible_types = {"RESISTANCE",
                                                  "RCR",
+                                                 "IMPEDANCE",
                                                  "ClosedLoopRCR",
                                                  "SimplifiedRCR",
                                                  "CORONARY",

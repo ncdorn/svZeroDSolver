@@ -17,6 +17,7 @@ Integrator::Integrator(Model* model, double time_step_size, double rho,
   size = model->dofhandler.size();
   system = SparseSystem(size);
   this->time_step_size = time_step_size;
+  this->model->set_time_step_size(time_step_size);
   this->atol = atol;
   this->max_iter = max_iter;
 
@@ -27,7 +28,7 @@ Integrator::Integrator(Model* model, double time_step_size, double rho,
   system.reserve(model);
 }
 
-// Must declare default constructord and dedtructor
+// Must declare default constructors and dedtructor
 // because of Eigen.
 Integrator::Integrator() {}
 Integrator::~Integrator() {}
@@ -40,6 +41,7 @@ void Integrator::clean() {
 
 void Integrator::update_params(double time_step_size) {
   this->time_step_size = time_step_size;
+  model->set_time_step_size(time_step_size);
   y_coeff = gamma * time_step_size;
   y_coeff_jacobian = alpha_f * y_coeff;
   model->update_constant(system);
@@ -104,6 +106,7 @@ State Integrator::step(const State& old_state, double time) {
     n_nonlin_iter++;
   }
 
+  model->accept_timestep(new_state.y);
   return new_state;
 }
 
