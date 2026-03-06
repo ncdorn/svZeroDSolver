@@ -35,7 +35,6 @@
  *             "bc_name": "OUT",
  *             "bc_type": "IMPEDANCE",
  *             "bc_values": {
- *                 "period": 1.0,
  *                 "Pd": 0.0,
  *                 "z": [ ... ],
  *                 "convolution_mode": "exact",
@@ -59,7 +58,6 @@ class ImpedanceBC : public Block {
   ImpedanceBC(int id, Model* model)
       : Block(id, model, BlockType::impedance_bc, BlockClass::boundary_condition,
               {{"z", InputParameter(false, false, false)},
-               {"period", InputParameter(false, false, false)},
                {"Pd", InputParameter(true, false, false)},
                {"convolution_mode", InputParameter(true, false, false)},
                {"num_kernel_terms", InputParameter(true, false, false)}}) {}
@@ -79,12 +77,11 @@ class ImpedanceBC : public Block {
    * @brief Configure the impedance kernel and convolution controls.
    *
    * @param z Time-domain impedance kernel
-   * @param period Cardiac period corresponding to kernel
    * @param pd Distal/reference pressure
    * @param convolution_mode Convolution mode (`exact` or `truncated`)
    * @param num_kernel_terms Number of kernel terms for truncated mode
    */
-  void configure(const std::vector<double>& z, double period, double pd,
+  void configure(const std::vector<double>& z, double pd,
                  const std::string& convolution_mode, int num_kernel_terms);
 
   TripletsContributions num_triplets{2, 0, 0};
@@ -96,7 +93,6 @@ class ImpedanceBC : public Block {
   double lagged_flow(int lag) const;
 
   std::vector<double> kernel;
-  double period = -1.0;
   double pd = 0.0;
   ConvolutionMode mode = ConvolutionMode::exact;
   int num_kernel_terms_input = -1;

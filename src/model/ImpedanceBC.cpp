@@ -133,16 +133,12 @@ void ImpedanceBC::set_persistent_state(const std::vector<double>& state) {
   initialized = true;
 }
 
-void ImpedanceBC::configure(const std::vector<double>& z, double period,
-                            double pd, const std::string& convolution_mode,
+void ImpedanceBC::configure(const std::vector<double>& z, double pd,
+                            const std::string& convolution_mode,
                             int num_kernel_terms) {
   if (z.empty()) {
     throw std::runtime_error("IMPEDANCE block " + get_name() +
                              " requires non-empty kernel `z`.");
-  }
-  if (period <= 0.0) {
-    throw std::runtime_error("IMPEDANCE block " + get_name() +
-                             " requires `period > 0`.");
   }
   for (size_t i = 0; i < z.size(); i++) {
     if (!std::isfinite(z[i])) {
@@ -177,7 +173,6 @@ void ImpedanceBC::configure(const std::vector<double>& z, double period,
   }
 
   kernel = z;
-  this->period = period;
   this->pd = pd;
   num_kernel_terms_input = num_kernel_terms;
   configured = true;
@@ -204,6 +199,12 @@ void ImpedanceBC::ensure_initialized() {
   if (model_dt <= 0.0) {
     throw std::runtime_error("IMPEDANCE block " + get_name() +
                              " requires a positive solver time-step size.");
+  }
+  const double period = model->cardiac_cycle_period;
+  if (period <= 0.0) {
+    throw std::runtime_error("IMPEDANCE block " + get_name() +
+                             " requires `simulation_parameters.cardiac_period "
+                             "> 0`.");
   }
 
   if (!initialized) {

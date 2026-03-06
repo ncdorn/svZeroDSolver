@@ -1,5 +1,6 @@
 {
   "simulation_parameters": {
+    "cardiac_period": 0.004,
     "coupled_simulation": true,
     "number_of_time_pts": 5,
     "external_step_size": 0.004,
@@ -12,7 +13,6 @@
       "bc_name": "IMP",
       "bc_type": "IMPEDANCE",
       "bc_values": {
-        "period": 0.004,
         "Pd": 5.0,
         "z": [400.0, 120.0, 40.0, 10.0]
       }

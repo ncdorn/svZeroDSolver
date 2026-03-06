@@ -275,7 +275,6 @@
       "bc_name": "OUT",
       "bc_type": "IMPEDANCE",
       "bc_values": {
-        "period": 1.0,
         "Pd": 80000.0,
         "z": [
           915.0,
@@ -411,6 +410,7 @@
     }
   ],
   "simulation_parameters": {
+    "cardiac_period": 1.0,
     "number_of_cardiac_cycles": 6,
     "number_of_time_pts_per_cardiac_cycle": 129,
     "output_all_cycles": true,

@@ -405,28 +405,11 @@ void create_boundary_conditions(Model& model, const nlohmann::json& config,
       }
       std::vector<double> z = bc_values["z"].get<std::vector<double>>();
 
-      if (!bc_values.contains("period")) {
-        throw std::runtime_error("IMPEDANCE block " + bc_name +
-                                 " is missing required `period`.");
-      }
-      double period = bc_values["period"];
-      const double period_tol = 1.0e-12;
-      if (model.cardiac_cycle_period > 0.0) {
-        if (std::abs(model.cardiac_cycle_period - period) > period_tol) {
-          throw std::runtime_error(
-              "Inconsistent cardiac cycle period defined in IMPEDANCE block " +
-              bc_name + ".");
-        }
-      } else {
-        model.cardiac_cycle_period = period;
-      }
-
       double pd = bc_values.value("Pd", 0.0);
       std::string convolution_mode = bc_values.value("convolution_mode", "exact");
       int num_kernel_terms = bc_values.value("num_kernel_terms", -1);
 
-      impedance_block->configure(z, period, pd, convolution_mode,
-                                 num_kernel_terms);
+      impedance_block->configure(z, pd, convolution_mode, num_kernel_terms);
     }
 
     if (block->block_type == BlockType::closed_loop_rcr_bc) {
