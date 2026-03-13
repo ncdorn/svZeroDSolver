@@ -211,16 +211,31 @@ void validate_input(const nlohmann::json& config) {
   }
 }
 
+bool config_has_impedance_bc(const nlohmann::json& config) {
+  if (!config.contains("boundary_conditions") ||
+      !config["boundary_conditions"].is_array()) {
+    return false;
+  }
+  for (const auto& bc_config : config["boundary_conditions"]) {
+    if (bc_config.value("bc_type", "") == "IMPEDANCE") {
+      return true;
+    }
+  }
+  return false;
+}
+
 SimulationParameters load_simulation_params(const nlohmann::json& config) {
   DEBUG_MSG("Loading simulation parameters");
   SimulationParameters sim_params;
   const auto& sim_config = config["simulation_parameters"];
   sim_params.sim_coupled = sim_config.value("coupled_simulation", false);
+  const bool has_impedance = config_has_impedance_bc(config);
 
   if (!sim_params.sim_coupled) {
     sim_params.sim_num_cycles = sim_config["number_of_cardiac_cycles"];
     sim_params.sim_pts_per_cycle =
         sim_config["number_of_time_pts_per_cardiac_cycle"];
+    sim_params.sim_impedance_pts_per_cycle = sim_params.sim_pts_per_cycle;
     sim_params.sim_num_time_steps =
         (sim_params.sim_pts_per_cycle - 1) * sim_params.sim_num_cycles + 1;
     sim_params.use_cycle_to_cycle_error =
@@ -236,8 +251,28 @@ SimulationParameters load_simulation_params(const nlohmann::json& config) {
     sim_params.sim_num_cycles = 1;
     sim_params.sim_num_time_steps = sim_config["number_of_time_pts"];
     sim_params.sim_pts_per_cycle = sim_params.sim_num_time_steps;
+    sim_params.sim_impedance_pts_per_cycle =
+        sim_config.value("number_of_time_pts_per_cardiac_cycle",
+                         sim_params.sim_pts_per_cycle);
     sim_params.sim_external_step_size =
         sim_config.value("external_step_size", 0.1);
+    if (has_impedance) {
+      if (sim_params.sim_num_time_steps != 2) {
+        throw std::runtime_error(
+            "Coupled configs with IMPEDANCE boundary conditions require "
+            "`simulation_parameters.number_of_time_pts = 2`.");
+      }
+      if (!sim_config.contains("number_of_time_pts_per_cardiac_cycle")) {
+        throw std::runtime_error(
+            "Coupled configs with IMPEDANCE boundary conditions require "
+            "`simulation_parameters.number_of_time_pts_per_cardiac_cycle`.");
+      }
+      if (sim_params.sim_impedance_pts_per_cycle <= 1) {
+        throw std::runtime_error(
+            "Coupled configs with IMPEDANCE boundary conditions require "
+            "`simulation_parameters.number_of_time_pts_per_cardiac_cycle > 1`.");
+      }
+    }
   }
   sim_params.sim_abs_tol = sim_config.value("absolute_tolerance", 1e-8);
   sim_params.sim_nliter = sim_config.value("maximum_nonlinear_iterations", 30);

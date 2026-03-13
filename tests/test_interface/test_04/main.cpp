@@ -38,14 +38,14 @@ int main(int argc, char** argv) {
   }
 
   interface.initialize(std::string(argv[2]));
-  interface.set_external_step_size(0.004);
+  interface.set_external_step_size(0.001);
 
   std::vector<double> y0(interface.system_size_, 0.0);
   std::vector<double> ydot0(interface.system_size_, 0.0);
   interface.return_y(y0);
   interface.return_ydot(ydot0);
 
-  std::vector<double> params = {2.0, 0.0, 0.004, 1.0, 2.0};
+  std::vector<double> params = {2.0, 0.0, 0.001, 1.0, 2.0};
   interface.update_block_params("FLOW_COUPLING", params);
 
   std::vector<double> t(interface.num_output_steps_, 0.0);

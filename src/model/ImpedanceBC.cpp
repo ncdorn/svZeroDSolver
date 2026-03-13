@@ -225,7 +225,26 @@ void ImpedanceBC::ensure_initialized() {
                                ", dt=" + std::to_string(model_dt) + ".");
     }
 
-    num_period_steps = static_cast<int>(rounded);
+    const int dt_period_steps = static_cast<int>(rounded);
+    if (model->impedance_points_per_cycle > 0) {
+      const int configured_period_steps = model->impedance_points_per_cycle - 1;
+      if (configured_period_steps <= 0) {
+        throw std::runtime_error(
+            "IMPEDANCE block " + get_name() +
+            " requires `simulation_parameters.number_of_time_pts_per_cardiac_cycle > 1`.");
+      }
+      if (configured_period_steps != dt_period_steps) {
+        throw std::runtime_error(
+            "IMPEDANCE block " + get_name() +
+            " requires `simulation_parameters.number_of_time_pts_per_cardiac_cycle - 1` "
+            "to match cardiac_period / dt. Expected " +
+            std::to_string(dt_period_steps + 1) + ", got " +
+            std::to_string(model->impedance_points_per_cycle) + ".");
+      }
+      num_period_steps = configured_period_steps;
+    } else {
+      num_period_steps = dt_period_steps;
+    }
     if (kernel.size() != static_cast<size_t>(num_period_steps)) {
       throw std::runtime_error(
           "IMPEDANCE block " + get_name() +

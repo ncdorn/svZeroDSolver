@@ -31,8 +31,6 @@ semantics.
 Required JSON fields in `bc_values`:
 
 * `z`: time-domain impedance kernel array.
-* `period`: kernel period in seconds (must match solver discretization and the
-  model cardiac period, when defined).
 
 Optional fields:
 
@@ -40,5 +38,15 @@ Optional fields:
 * `convolution_mode`: `exact` (default) or `truncated`.
 * `num_kernel_terms`: required when `convolution_mode` is `truncated`.
 
-For `exact`, `z.size()` must equal `round(period / dt)`. For `truncated`,
-runtime cost is `O(num_kernel_terms)` per accepted 0D step.
+Simulation timing requirements:
+
+* Non-coupled configs must set
+  `simulation_parameters.number_of_time_pts_per_cardiac_cycle = z.size() + 1`.
+* 3D-coupled configs must keep `simulation_parameters.number_of_time_pts = 2`
+  for the external interface step and also set
+  `simulation_parameters.number_of_time_pts_per_cardiac_cycle = z.size() + 1`
+  for the impedance cycle discretization.
+* In all cases, `simulation_parameters.cardiac_period / dt` must match
+  `z.size()`.
+
+For `truncated`, runtime cost is `O(num_kernel_terms)` per accepted 0D step.
