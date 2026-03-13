@@ -296,15 +296,18 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'chamber':
                 detected_objects.chambers.push({
                     name: data.name,
-                    type: 'ChamberElastanceInductor',
+                    type: 'LinearElastanceChamber',
                     values: {
                         Emax: '',
-                        Emin: '',
-                        Vrd: '',
-                        Vrs: '',
-                        t_active: '',
-                        t_twitch: '',
-                        Impedance: ''
+                        Epass: '',
+                        Vrest: ''
+                    },
+                    activation_function: {
+                        type: 'piecewise_cosine',
+                        contract_start: '',
+                        relax_start: '',
+                        contract_duration: '',
+                        relax_duration: ''
                     }
                 });
                 break;

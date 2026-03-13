@@ -1,10 +1,9 @@
 import os
 import json
 import numpy as np
-import os
-import json
 import pandas as pd
 import pytest
+import pysvzerod
 
 import sys
 sys.path.append(os.path.dirname(__file__))
@@ -16,8 +15,7 @@ EXPECTED_FAILURES = {
     'pulsatileFlow_R_RCR_mismatchPeriod.json'
 }
 
-@pytest.mark.parametrize("testfile", ['chamber_elastance_inductor.json', 
-                                      'steadyFlow_R_R.json', 
+@pytest.mark.parametrize("testfile", ['steadyFlow_R_R.json', 
                                       'pulsatileFlow_R_coronary_cycle_error.json', 
                                       'pulsatileFlow_R_coronary.json', 
                                       'coupledBlock_closedLoopHeart_withCoronaries.json', 
@@ -79,3 +77,32 @@ def test_solver(testfile):
     ref = pd.read_json(os.path.join(results_dir, f'result_{testfile}'))
 
     run_with_reference(ref, os.path.join(this_file_dir, 'cases', testfile), rtol_pres, rtol_flow)
+
+
+def test_solver_rejects_deprecated_chamber_elastance_inductor():
+    config = {
+        "simulation_parameters": {
+            "number_of_cardiac_cycles": 1,
+            "number_of_time_pts_per_cardiac_cycle": 2
+        },
+        "boundary_conditions": [],
+        "chambers": [{
+            "type": "ChamberElastanceInductor",
+            "name": "legacy_chamber",
+            "values": {
+                "Emax": 1.0,
+                "Emin": 0.1,
+                "Vrd": 10.0,
+                "Vrs": 5.0,
+                "Impedance": 0.01
+            },
+            "activation_function": {
+                "type": "half_cosine",
+                "t_active": 0.2,
+                "t_twitch": 0.3
+            }
+        }]
+    }
+
+    with pytest.raises(RuntimeError, match="ChamberElastanceInductor has been removed"):
+        pysvzerod.simulate(config)
