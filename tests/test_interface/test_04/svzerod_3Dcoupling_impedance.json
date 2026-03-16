@@ -3,7 +3,6 @@
     "cardiac_period": 0.004,
     "coupled_simulation": true,
     "number_of_time_pts": 2,
-    "number_of_time_pts_per_cardiac_cycle": 5,
     "external_step_size": 0.001,
     "output_all_cycles": true,
     "steady_initial": false,

@@ -43,9 +43,11 @@ Simulation timing requirements:
 * Non-coupled configs must set
   `simulation_parameters.number_of_time_pts_per_cardiac_cycle = z.size() + 1`.
 * 3D-coupled configs must keep `simulation_parameters.number_of_time_pts = 2`
-  for the external interface step and also set
-  `simulation_parameters.number_of_time_pts_per_cardiac_cycle = z.size() + 1`
-  for the impedance cycle discretization.
+  for the external interface step. The canonical coupled simulation parameters
+  are sufficient; if
+  `simulation_parameters.number_of_time_pts_per_cardiac_cycle` is omitted, the
+  impedance cycle discretization is inferred from
+  `simulation_parameters.cardiac_period / dt`.
 * In all cases, `simulation_parameters.cardiac_period / dt` must match
   `z.size()`.
 

@@ -106,3 +106,46 @@ def test_solver_rejects_deprecated_chamber_elastance_inductor():
 
     with pytest.raises(RuntimeError, match="ChamberElastanceInductor has been removed"):
         pysvzerod.simulate(config)
+
+
+def test_solver_accepts_canonical_coupled_impedance_config_without_points_per_cycle():
+    config = {
+        "simulation_parameters": {
+            "coupled_simulation": True,
+            "number_of_time_pts": 2,
+            "external_step_size": 0.001,
+            "cardiac_period": 0.004,
+            "output_all_cycles": True,
+            "steady_initial": False,
+            "absolute_tolerance": 1e-10,
+        },
+        "boundary_conditions": [
+            {
+                "bc_name": "IMP",
+                "bc_type": "IMPEDANCE",
+                "bc_values": {
+                    "Pd": 5.0,
+                    "z": [400.0, 120.0, 40.0, 10.0],
+                },
+            }
+        ],
+        "external_solver_coupling_blocks": [
+            {
+                "name": "FLOW_COUPLING",
+                "type": "FLOW",
+                "location": "inlet",
+                "connected_block": "IMP",
+                "periodic": False,
+                "values": {
+                    "t": [0.0, 0.004],
+                    "Q": [1.0, 1.0],
+                },
+            }
+        ],
+        "junctions": [],
+        "vessels": [],
+    }
+
+    result = pysvzerod.simulate(config)
+
+    assert not result.empty
