@@ -29,6 +29,7 @@ Debug*/
 externals/
 *.so
 build*/
+_codex_build*/
 
 # IDE
 .cproject
